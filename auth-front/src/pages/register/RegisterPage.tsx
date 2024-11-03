@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks";
+import './RegisterPage.css'
 
 
 export const RegisterPage = () => {
@@ -104,15 +105,15 @@ export const RegisterPage = () => {
     ];
 
     return(
-        <div>
-            Register page
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className='divRegister'>
+            <h2>Register page</h2>
             <Form 
             input={inputs} 
             onSubmit={handleRegistrar} 
             buttonText={"Entrar"} 
             buttonType={"submit"}
             />
+            {error && <p className='error-message' style={{ color: 'red' }}>{error}</p>}
             <p>Já tem uma conta? <Link to="/login">Clique aqui</Link></p>
         </div>
     );

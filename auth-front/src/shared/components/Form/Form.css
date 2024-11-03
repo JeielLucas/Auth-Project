@@ -1,0 +1,16 @@
+.form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3vh;
+}
+.button{
+    border: none;
+    background-color: #793DF3;
+    color: #000;
+    width: 100%;
+    height: 5vh;
+    border-radius: 0.6rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}

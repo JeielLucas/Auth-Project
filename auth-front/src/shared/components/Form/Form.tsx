@@ -1,5 +1,6 @@
 import React from "react";
 import { Input } from "../Input/Input";
+import './Form.css'
 
 interface FormProps {
     input:{
@@ -36,7 +37,7 @@ export const Form: React.FC<FormProps> = ({
     };
 
     return(
-        <form onSubmit={handleSubmit}>
+        <form className='form' onSubmit={handleSubmit}>
             {input.map((field) =>(
                 <Input
                     key = {field.id}
@@ -50,7 +51,7 @@ export const Form: React.FC<FormProps> = ({
                     placeholder={field.placeholder}
                 />
             ))}
-            <button type={buttonType}>{buttonText}</button>
+            <button className='button' type={buttonType}>{buttonText}</button>
         </form>
     );
 };

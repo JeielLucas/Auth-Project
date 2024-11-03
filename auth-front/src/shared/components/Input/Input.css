@@ -1,0 +1,14 @@
+.divInput{
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+}
+.label{
+    display: flex;
+    font-size: 1.5rem;
+}
+.input{
+    border-radius: 0.6rem;
+    width: 30vw;
+    height: 5vh;
+}

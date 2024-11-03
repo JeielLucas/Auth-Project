@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks";
-
+import './LoginPage.css'
 
 export const LoginPage = () => {
     const { login } = useAuth();
@@ -48,7 +48,7 @@ export const LoginPage = () => {
             placeholder: 'Digite sua senha',
             required: true,
             value: password,
-            labelText: 'Digite sua senha',
+            labelText: 'Senha',
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleInputChange("password", e.target.value),
         },
     ];
@@ -56,10 +56,10 @@ export const LoginPage = () => {
 
 
     return(
-        <div>
-            Login page
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className='divLogin'>
+            <h2>Login page</h2>
             <Form input={inputs} onSubmit={handleEntrar} buttonText="Entrar" buttonType="submit"/>
+            {error && <p className='error-message' style={{ color: 'red' }}>{error}</p>}
             <p>Não tem uma conta? <Link to="/register">Clique aqui</Link></p>
         </div>
     );
