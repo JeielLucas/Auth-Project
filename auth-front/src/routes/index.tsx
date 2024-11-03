@@ -7,11 +7,12 @@ export const Router = () =>{
         <BrowserRouter>
             <Routes>
 
-                <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/login" element={<LoginPage />}/>
                 <Route path="/register" element={<RegisterPage />}/>
 
-                <Route path="*" element={<Navigate to="/dashboard" />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+
+                <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
         </BrowserRouter>
     );

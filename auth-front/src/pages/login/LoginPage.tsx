@@ -1,12 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
+import { useAuth } from "../../shared/hooks";
 
 
 export const LoginPage = () => {
+    const { login } = useAuth();
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
+    const [error, setError] = useState('');
+    
 
     const handleInputChange = (id: string, value: string) =>{
         if(id === "email"){
@@ -17,9 +21,15 @@ export const LoginPage = () => {
 
     };
 
-    const handleEntrar = (formData: { [key: string]: string}) => {
-        console.log("Email: ", formData.email);
-        console.log("Password: ", formData.password);
+    const handleEntrar = async (formData: { [key: string]: string}) => {
+        try{
+            await login(formData.email, formData.password);
+            navigate('/dashboard')
+        }catch(error){
+            setError('Erro ao fazer login, verifique suas credenciais');
+        }
+
+
     };
 
     const inputs = [
@@ -48,6 +58,7 @@ export const LoginPage = () => {
     return(
         <div>
             Login page
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             <Form input={inputs} onSubmit={handleEntrar} buttonText="Entrar" buttonType="submit"/>
             <p>Não tem uma conta? <Link to="/register">Clique aqui</Link></p>
         </div>

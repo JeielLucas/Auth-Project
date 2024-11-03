@@ -1,20 +1,54 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
+import { useAuth } from "../../shared/hooks";
 
 
 export const RegisterPage = () => {
+    const { register } = useAuth();
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmEmail, setConfirmEmail] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
 
 
-    const handleRegistrar = (formData: { [key:string]: string}) => { // Fazer manipulação dos dados e enviar para o back
-        console.log("Email: ", formData.email);
-        console.log("ConfirmEmail: ", formData.confirmEmail);
-        console.log("Password: ", formData.password);
-        console.log("ConfirmPassword: ", formData.confirmPassword);
+    const isEmailValid = (email: string): boolean =>{
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    const handleRegistrar = async (formData: { [key:string]: string}) => { // Fazer manipulação dos dados e enviar para o back
+        setError('');
+
+        if (!isEmailValid(email)) {
+            setError('Formato de email inválido');
+            return;
+        }
+        
+        if (email !== confirmEmail) {
+            setError('Emails não correspondem');
+            return;
+        }
+
+        if(!(password === confirmPassword) || password.length < 8){
+            setError('Senha inválida (diferentes ou tamanho menor que 8 caracteres)');
+            return;
+        }
+
+        try{
+            await register(formData.email, formData.confirmEmail, formData.password, formData.confirmPassword);
+            navigate('/dashboard')
+        }catch(error){
+            console.log("erro", error)
+            if(error instanceof Error) {
+                setError(error.message);
+                return;
+            }
+            setError('Erro desconhecido ao tentar cadastrar, por favor, tente novamente mais tarde');
+        }
+
     };
 
     const handleInputChange = (id: string, value: string) => {
@@ -72,6 +106,7 @@ export const RegisterPage = () => {
     return(
         <div>
             Register page
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             <Form 
             input={inputs} 
             onSubmit={handleRegistrar} 
