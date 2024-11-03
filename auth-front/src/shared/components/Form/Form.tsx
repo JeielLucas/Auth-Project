@@ -1,6 +1,7 @@
 import React from "react";
 import { Input } from "../Input/Input";
 import './Form.css'
+import { Link } from "react-router-dom";
 
 interface FormProps {
     input:{
@@ -16,13 +17,21 @@ interface FormProps {
     onSubmit: (value: { [key: string]: string }) => void;
     buttonText?: string;
     buttonType?: "submit" | "reset" | "button";
+    text: string;
+    link: string;
+    linkText: string;
+    errorMessage?: string;
 };
 
 export const Form: React.FC<FormProps> = ({
     input, 
     onSubmit, 
     buttonText,
-    buttonType
+    buttonType,
+    text,
+    link,
+    linkText,
+    errorMessage
 }) => {
 
     const handleSubmit = (event: React.FormEvent) => {
@@ -37,21 +46,27 @@ export const Form: React.FC<FormProps> = ({
     };
 
     return(
-        <form className='form' onSubmit={handleSubmit}>
-            {input.map((field) =>(
-                <Input
-                    key = {field.id}
-                    id={field.id}
-                    type={field.type}
-                    minLength={field.minLength}
-                    required={field.required}
-                    value={field.value}
-                    labelText={field.labelText}
-                    onChange={field.onChange}
-                    placeholder={field.placeholder}
-                />
-            ))}
-            <button className='button' type={buttonType}>{buttonText}</button>
-        </form>
+        <div className='container'>
+            <h2>{text}</h2>
+            <form className='form' onSubmit={handleSubmit}>
+                {input.map((field) =>(
+                    <Input
+                        key = {field.id}
+                        id={field.id}
+                        type={field.type}
+                        minLength={field.minLength}
+                        required={field.required}
+                        value={field.value}
+                        labelText={field.labelText}
+                        onChange={field.onChange}
+                        placeholder={field.placeholder}
+                    />
+                ))}
+                <button className='button' type={buttonType}>{buttonText}</button>
+            </form>
+            {errorMessage && <p className='error-message' style={{ color: 'red' }}>{errorMessage}</p>}
+            <p>{linkText} <Link to={link}>Clique aqui</Link></p>
+        </div>
+        
     );
 };

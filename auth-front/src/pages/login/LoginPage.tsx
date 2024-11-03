@@ -1,8 +1,7 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks";
-import './LoginPage.css'
 
 export const LoginPage = () => {
     const { login } = useAuth();
@@ -57,10 +56,16 @@ export const LoginPage = () => {
 
     return(
         <div className='divLogin'>
-            <h2>Login page</h2>
-            <Form input={inputs} onSubmit={handleEntrar} buttonText="Entrar" buttonType="submit"/>
-            {error && <p className='error-message' style={{ color: 'red' }}>{error}</p>}
-            <p>Não tem uma conta? <Link to="/register">Clique aqui</Link></p>
+            <Form 
+            text='Login page' 
+            input={inputs} 
+            onSubmit={handleEntrar} 
+            buttonText="Entrar"
+             buttonType="submit"
+             link='/register'
+             linkText= 'Já tem uma conta?'
+             errorMessage={error}
+             />
         </div>
     );
 };

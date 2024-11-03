@@ -11,4 +11,7 @@
     border-radius: 0.6rem;
     width: 30vw;
     height: 5vh;
+    border: none;
+    outline: none;
+    background-color: #d9d9d9;
 }
