@@ -28,6 +28,11 @@ public class AuthController {
         return authService.LoginUser(user);
     }
 
+    @GetMapping("/ativar-conta")
+    public ResponseEntity activateUser(@RequestParam String token){
+        return authService.activateUser(token);
+    }
+
     @GetMapping("/ping")
     public ResponseEntity<String> ping(){
         return ResponseEntity.ok("pong");

@@ -11,33 +11,48 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, EmailService emailService) {
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
-    public ResponseEntity<String> RegisterUser(RegisterRequestDTO user) {
+    public ResponseEntity<String> RegisterUser(RegisterRequestDTO userDTO) {
 
-        if(!user.email().equals(user.confirmEmail())){
+        if(!userDTO.email().equals(userDTO.confirmEmail())){
             throw new MismatchException("Emails não coincidem");
         }
 
-        if(!user.password().equals(user.confirmPassword())){
+        if(!userDTO.password().equals(userDTO.confirmPassword())){
             throw new MismatchException("Senhas não coincidem");
         }
 
-        if(userRepository.findByEmail(user.email()) != null) {
+        if(userRepository.findByEmail(userDTO.email()) != null) {
             throw new EmailAlreadyExistsException("Email já cadastrado");
-        };
+        }
 
 
-        User newUser = new User(user.email(), user.password());
+        User user = new User(userDTO.email(), userDTO.password());
 
-        userRepository.save(newUser);
+        user.setActive(false);
+
+        String token = UUID.randomUUID().toString();
+
+        user.setActivationToken(token);
+        user.setTokenExpiration(LocalDateTime.now().plusHours(1));
+        user.setCreatedAt(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        emailService.sendActivationEmail(user, token);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("Usuário registado com sucesso");
     }
@@ -54,5 +69,22 @@ public class AuthService {
         }
 
         return ResponseEntity.status(HttpStatus.OK).body("Usuário logado com sucesso");
+    }
+
+    public ResponseEntity activateUser(String token){
+
+        User user = userRepository.findByActivationToken(token);
+
+        if(user == null || user.getTokenExpiration().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body("Token inválido ou expirado");
+        }
+
+        user.setActive(true);
+        user.setActivationToken(null);
+        user.setTokenExpiration(null);
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok().body("Conta ativada com sucesso");
     }
 }
