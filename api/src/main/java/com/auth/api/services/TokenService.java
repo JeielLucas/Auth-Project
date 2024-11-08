@@ -1,6 +1,7 @@
 package com.auth.api.services;
 
 import com.auth.api.entities.User;
+import com.auth.api.entities.UserDetailsImpl;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
@@ -17,13 +18,13 @@ public class TokenService {
     private final String SECRET_KEY = "secret";
     private final String ISSUER = "auth-api";
 
-    public String generateToken(User user){
+    public String generateToken(UserDetailsImpl user){
         try{
             Algorithm algorithm = Algorithm.HMAC256(SECRET_KEY);
 
             return JWT.create()
                     .withIssuer(ISSUER)
-                    .withSubject(user.getEmail())
+                    .withSubject(user.getUsername())
                     .withIssuedAt(creationDate())
                     .withExpiresAt(expirationDate())
                     .sign(algorithm);
@@ -41,7 +42,7 @@ public class TokenService {
                     .build()
                     .verify(token)
                     .getSubject();
-        }catch (Exception ex){
+        }catch (JWTVerificationException ex){
             throw new JWTVerificationException("Erro ao verificar o token: ", ex);
         }
     }

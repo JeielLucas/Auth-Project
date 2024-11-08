@@ -1,8 +1,10 @@
 package com.auth.api.services;
 
 import com.auth.api.entities.User;
+import com.auth.api.entities.UserDetailsImpl;
 import com.auth.api.enums.UserRole;
 import com.auth.api.exceptions.EmailAlreadyExistsException;
+import com.auth.api.exceptions.InvalidCredentialsException;
 import com.auth.api.exceptions.MismatchException;
 import com.auth.api.repositories.RegisterRequestDTO;
 import com.auth.api.repositories.UserRepository;
@@ -11,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -22,16 +26,20 @@ public class AuthService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final TokenService tokenService;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
 
-    public AuthService(UserRepository userRepository, EmailService emailService, TokenService tokenService) {
+    public AuthService(UserRepository userRepository, EmailService emailService, TokenService tokenService, BCryptPasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.tokenService = tokenService;
-
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
     }
 
     public ResponseEntity<String> RegisterUser(RegisterRequestDTO userDTO) {
+
         if(!userDTO.email().equals(userDTO.confirmEmail())){
             throw new MismatchException("Emails não coincidem");
         }
@@ -44,8 +52,9 @@ public class AuthService {
             throw new EmailAlreadyExistsException("Email já cadastrado");
         }
 
+        String encryptedPassword = passwordEncoder.encode(userDTO.password());
 
-        User user = new User(userDTO.email(), userDTO.password(), UserRole.USER);
+        User user = new User(userDTO.email(), encryptedPassword, UserRole.USER);
 
         user.setActive(false);
 
@@ -62,7 +71,7 @@ public class AuthService {
         return ResponseEntity.status(HttpStatus.CREATED).body("Usuário registado com sucesso");
     }
 
-    public ResponseEntity<String> LoginUser(LoginRequestDTO userDTO){
+    public ResponseEntity LoginUser(LoginRequestDTO userDTO){
 
         User user = userRepository.findByEmail(userDTO.email());
 
@@ -74,9 +83,15 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário inativo, por favor, verifique seu email");
         }
 
-        String token = tokenService.generateToken(user);
+        var usernamePassword = new UsernamePasswordAuthenticationToken(userDTO.email(), userDTO.password());
 
-        return ResponseEntity.status(HttpStatus.OK).body(token);
+        Authentication authentication = authenticationManager.authenticate(usernamePassword);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        String token = tokenService.generateToken(userDetails);
+
+        return ResponseEntity.ok(token);
     }
 
     public ResponseEntity activateUser(String token){
@@ -102,8 +117,9 @@ public class AuthService {
         if(user == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
         }
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
 
-        String token = tokenService.generateToken(user);
+        String token = tokenService.generateToken(userDetails);
 
         emailService.sendResetPasswordEmail(user, token);
 
