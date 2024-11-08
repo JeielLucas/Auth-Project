@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 @RestController
-@RequestMapping("api/v1/auth")
+@RequestMapping("api/v2/auth")
 public class AuthController {
 
     private final AuthService authService;
