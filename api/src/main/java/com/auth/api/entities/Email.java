@@ -24,8 +24,12 @@ public class Email {
     private String ownerRef;
     private String emailTo;
     private String subject;
+
+    @Column(length = 1000)
     private String text;
+
     private LocalDateTime createdAt;
+
     @Enumerated(EnumType.STRING)
     private StatusEmail statusEmail;
 }

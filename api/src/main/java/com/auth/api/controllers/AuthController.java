@@ -4,8 +4,11 @@ import com.auth.api.repositories.LoginRequestDTO;
 import com.auth.api.repositories.RegisterRequestDTO;
 import com.auth.api.services.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -20,7 +23,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<String> Register(@Valid @RequestBody RegisterRequestDTO user){
         return authService.RegisterUser(user);
-
     }
 
     @PostMapping("/login")
@@ -31,6 +33,21 @@ public class AuthController {
     @GetMapping("/ativar-conta")
     public ResponseEntity activateUser(@RequestParam String token){
         return authService.activateUser(token);
+    }
+
+    @GetMapping("/reset-password")
+    public ResponseEntity requestPasswordReset(@RequestParam String email){
+        return authService.requestPasswordReset(email);
+    }
+
+    @GetMapping("/redefinir-senha")
+    public ResponseEntity resetPassword(@RequestParam String token, @RequestBody String password){
+        return authService.resetPassword(token, password);
+    }
+
+    @GetMapping("/validar-token")
+    public ResponseEntity validarToken(@RequestParam String token){
+        return authService.validarToken(token);
     }
 
     @GetMapping("/ping")

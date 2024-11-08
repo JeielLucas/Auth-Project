@@ -30,14 +30,26 @@ public class EmailService {
         email.setSubject("Ativação de conta - Auth Project");
         email.setText(
                 "Clique no link abaixo para ativar sua conta \n" +
-                "http://localhost:8080/api/v1/auth/ativar-conta?token=" + token
+                "http://localhost:3000/ativar-conta"  // "http://localhost:8080/api/v1/auth/ativar-conta?token=" + token
         );
         email.setCreatedAt(LocalDateTime.now());
 
         sendEmail(email);
     }
 
+    public void sendResetPasswordEmail(User user, String token) {
+        Email email = new Email();
+        email.setOwnerRef("api-auth-project");
+        email.setEmailTo(user.getEmail());
+        email.setSubject("Redefinição de senha - Auth Project");
+        email.setText(
+                "Clique no link abaixo para redefinir sua senha \n"
+                + "http://localhost:3000/redefinir-senha"   // "http://localhost:8080/api/v1/auth/redefinir-senha?token=" + token
+        );
+        email.setCreatedAt(LocalDateTime.now());
 
+        sendEmail(email);
+    }
 
     private void sendEmail(Email email){
         SimpleMailMessage message = new SimpleMailMessage();
