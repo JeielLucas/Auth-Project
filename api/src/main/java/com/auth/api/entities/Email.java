@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Email {
+public class Email{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

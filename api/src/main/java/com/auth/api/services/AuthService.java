@@ -1,25 +1,19 @@
 package com.auth.api.services;
 
 import com.auth.api.entities.User;
+import com.auth.api.enums.UserRole;
 import com.auth.api.exceptions.EmailAlreadyExistsException;
-import com.auth.api.exceptions.InvalidCredentialsException;
 import com.auth.api.exceptions.MismatchException;
 import com.auth.api.repositories.RegisterRequestDTO;
 import com.auth.api.repositories.UserRepository;
 import com.auth.api.repositories.LoginRequestDTO;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -27,14 +21,17 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final TokenService tokenService;
 
-    public AuthService(UserRepository userRepository, EmailService emailService) {
+
+    public AuthService(UserRepository userRepository, EmailService emailService, TokenService tokenService) {
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.tokenService = tokenService;
+
     }
 
     public ResponseEntity<String> RegisterUser(RegisterRequestDTO userDTO) {
-
         if(!userDTO.email().equals(userDTO.confirmEmail())){
             throw new MismatchException("Emails não coincidem");
         }
@@ -48,7 +45,7 @@ public class AuthService {
         }
 
 
-        User user = new User(userDTO.email(), userDTO.password());
+        User user = new User(userDTO.email(), userDTO.password(), UserRole.USER);
 
         user.setActive(false);
 
@@ -65,18 +62,21 @@ public class AuthService {
         return ResponseEntity.status(HttpStatus.CREATED).body("Usuário registado com sucesso");
     }
 
-    public ResponseEntity<String> LoginUser(LoginRequestDTO user){
-        User newUser = userRepository.findByEmail(user.email());
+    public ResponseEntity<String> LoginUser(LoginRequestDTO userDTO){
 
-        if(newUser == null) {
-            throw new InvalidCredentialsException("Email não cadastrado");
+        User user = userRepository.findByEmail(userDTO.email());
+
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário não encontrado");
         }
 
-        if(!user.password().equals(newUser.getPassword())) {
-            throw new InvalidCredentialsException("Senha incorreta");
+        if(!user.isActive()){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário inativo, por favor, verifique seu email");
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body("Usuário logado com sucesso");
+        String token = tokenService.generateToken(user);
+
+        return ResponseEntity.status(HttpStatus.OK).body(token);
     }
 
     public ResponseEntity activateUser(String token){
@@ -103,7 +103,7 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
         }
 
-        String token = generateToken(user);
+        String token = tokenService.generateToken(user);
 
         emailService.sendResetPasswordEmail(user, token);
 
@@ -111,7 +111,7 @@ public class AuthService {
     }
 
     public ResponseEntity resetPassword(String token, String newPassword){
-        String validationResponse = validateToken(token);
+        String validationResponse = tokenService.validateToken(token);
 
         if(validationResponse.equals("Token inválido") || validationResponse.equals("Token expirado")){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationResponse);
@@ -132,51 +132,12 @@ public class AuthService {
 
     public ResponseEntity validarToken(String token){
 
-        String validationResponse =  validateToken(token);
+        String validationResponse =  tokenService.validateToken(token);
 
         if(validationResponse.equals("Token expirado") || validationResponse.equals("Token inválido")){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationResponse);
         }
 
         return ResponseEntity.ok("Token válido");
-    }
-
-    private String generateToken(User user){
-        try{
-            Instant expiration = LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.of("-03:00"));
-
-            Algorithm algorithm = Algorithm.HMAC256("secret");
-
-            String token = JWT.create()
-                    .withIssuer("auth-project")
-                    .withSubject(user.getEmail())
-                    .withExpiresAt(Instant.from(expiration))
-                    .sign(algorithm);
-            return token;
-        }catch (JWTVerificationException ex){
-            return "";
-        }
-    }
-
-    private String validateToken(String token){
-        try{
-            Algorithm algorithm = Algorithm.HMAC256("secret");
-
-            DecodedJWT decodedJWT =  JWT.require(algorithm)
-                    .withIssuer("auth-project")
-                    .build()
-                    .verify(token);
-
-            String email = decodedJWT.getSubject();
-            Date expirationDate = decodedJWT.getExpiresAt();
-
-            if(expirationDate != null && expirationDate.before(new Date())){
-                return "Token expirado";
-            }
-
-            return email;
-        }catch (Exception e){
-            return "Token inválido";
-        }
     }
 }

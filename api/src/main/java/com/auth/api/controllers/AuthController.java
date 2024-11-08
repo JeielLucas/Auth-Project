@@ -4,11 +4,9 @@ import com.auth.api.repositories.LoginRequestDTO;
 import com.auth.api.repositories.RegisterRequestDTO;
 import com.auth.api.services.AuthService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 
 @RestController
 @RequestMapping("api/v2/auth")
