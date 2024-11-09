@@ -1,4 +1,4 @@
-package com.auth.api.repositories;
+package com.auth.api.dtos;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

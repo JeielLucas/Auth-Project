@@ -1,5 +1,6 @@
 package com.auth.api.handlers;
 
+import com.auth.api.dtos.ErrorResponse;
 import com.auth.api.exceptions.EmailAlreadyExistsException;
 import com.auth.api.exceptions.InvalidCredentialsException;
 import com.auth.api.exceptions.MismatchException;
@@ -10,35 +11,39 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestControllerAdvice
 public class ValidationExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex){
-        Map<String, String> erros = new HashMap<>();
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex){
+        List<String> erros = new ArrayList<>();
 
-        for (FieldError error : ex.getBindingResult().getFieldErrors()){
-            erros.put(error.getField(), error.getDefaultMessage());
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            erros.add(error.getDefaultMessage());
         }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erros);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Erro de validação nos campos fornecidos", erros);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<String> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex){
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), "Email já existe", Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<String> handleInvalidCredentialsException(InvalidCredentialsException ex){
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(InvalidCredentialsException ex){
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Credenciais inválidas", Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     @ExceptionHandler(MismatchException.class)
-    public ResponseEntity<String> handlMismatchException(MismatchException ex){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    public ResponseEntity<ErrorResponse> handlMismatchException(MismatchException ex){
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Erro de correspondência", Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }
