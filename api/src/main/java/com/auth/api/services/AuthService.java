@@ -1,14 +1,16 @@
 package com.auth.api.services;
 
+import com.auth.api.dtos.ApiResponse;
+import com.auth.api.dtos.TokenResponse;
 import com.auth.api.entities.User;
 import com.auth.api.entities.UserDetailsImpl;
 import com.auth.api.enums.UserRole;
 import com.auth.api.exceptions.EmailAlreadyExistsException;
 import com.auth.api.exceptions.InvalidCredentialsException;
 import com.auth.api.exceptions.MismatchException;
-import com.auth.api.repositories.RegisterRequestDTO;
+import com.auth.api.dtos.RegisterRequestDTO;
 import com.auth.api.repositories.UserRepository;
-import com.auth.api.repositories.LoginRequestDTO;
+import com.auth.api.dtos.LoginRequestDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,7 +40,7 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-    public ResponseEntity<String> RegisterUser(RegisterRequestDTO userDTO) {
+    public ResponseEntity<ApiResponse> RegisterUser(RegisterRequestDTO userDTO) {
 
         if(!userDTO.email().equals(userDTO.confirmEmail())){
             throw new MismatchException("Emails não coincidem");
@@ -68,30 +70,33 @@ public class AuthService {
 
         emailService.sendActivationEmail(user, token);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Usuário registado com sucesso");
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "", "Usuário criado com sucesso"));
     }
 
-    public ResponseEntity LoginUser(LoginRequestDTO userDTO){
+    public ResponseEntity<ApiResponse> LoginUser(LoginRequestDTO userDTO){
 
         User user = userRepository.findByEmail(userDTO.email());
 
         if(user == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário não encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false, null, "Usuário não cadastrado"));
         }
 
         if(!user.isActive()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuário inativo, por favor, verifique seu email");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false, null, "Usuário inativo, por favor, verifique seu email"));
         }
 
         var usernamePassword = new UsernamePasswordAuthenticationToken(userDTO.email(), userDTO.password());
+        try{
+            Authentication authentication = authenticationManager.authenticate(usernamePassword);
 
-        Authentication authentication = authenticationManager.authenticate(usernamePassword);
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            String token = tokenService.generateToken(userDetails);
 
-        String token = tokenService.generateToken(userDetails);
-
-        return ResponseEntity.ok(token);
+            return ResponseEntity.ok(new ApiResponse<>(true, new TokenResponse(token), "Sucess"));
+        }catch (AuthenticationException e){
+            throw new InvalidCredentialsException(e.getMessage());
+        }
     }
 
     public ResponseEntity activateUser(String token){
