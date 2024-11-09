@@ -23,16 +23,23 @@ public class SecurityConfiguration {
         this.securityFilter = securityFilter;
     }
 
+    public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST = {
+            "/api/v2/auth/login",
+            "/api/v2/auth/register"
+    };
+    public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET = {
+            "/api/v2/auth/ping",
+            "/api/v2/test/users"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(HttpMethod.POST, "/api/v2/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v2/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v2/test/users").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v2/auth/ping").permitAll()
+                        .requestMatchers(HttpMethod.POST, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).permitAll()
+                        .requestMatchers(HttpMethod.GET, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

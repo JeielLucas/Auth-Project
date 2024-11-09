@@ -11,6 +11,8 @@ import com.auth.api.exceptions.MismatchException;
 import com.auth.api.dtos.RegisterRequestDTO;
 import com.auth.api.repositories.UserRepository;
 import com.auth.api.dtos.LoginRequestDTO;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -73,7 +75,7 @@ public class AuthService {
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "", "Usuário criado com sucesso"));
     }
 
-    public ResponseEntity<ApiResponse> LoginUser(LoginRequestDTO userDTO){
+    public ResponseEntity<ApiResponse> LoginUser(LoginRequestDTO userDTO, HttpServletResponse response) {
 
         User user = userRepository.findByEmail(userDTO.email());
 
@@ -91,9 +93,14 @@ public class AuthService {
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-            String token = tokenService.generateToken(userDetails);
+            String token = tokenService.generateToken(userDetails, 1);
+            String refreshTokenString = tokenService.generateToken(userDetails, 72);
 
-            return ResponseEntity.ok(new ApiResponse<>(true, new TokenResponse(token), "Sucess"));
+            addCookieToResponse(response, "acess_token", token, 60*60, false, true);
+
+            addCookieToResponse(response, "refresh_token", refreshTokenString, 3*24*60*60, false, true);
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "", "Sucess"));
         }catch (AuthenticationException e){
             throw new InvalidCredentialsException(e.getMessage());
         }
@@ -124,7 +131,7 @@ public class AuthService {
         }
         UserDetailsImpl userDetails = new UserDetailsImpl(user);
 
-        String token = tokenService.generateToken(userDetails);
+        String token = tokenService.generateToken(userDetails, 1);
 
         emailService.sendResetPasswordEmail(user, token);
 
@@ -160,5 +167,16 @@ public class AuthService {
         }
 
         return ResponseEntity.ok("Token válido");
+    }
+
+    private void addCookieToResponse(HttpServletResponse response, String name, String value, int maxAge, boolean secure, boolean httpOnly){
+        Cookie cookie = new Cookie(name, value);
+
+        cookie.setMaxAge(maxAge);
+        cookie.setHttpOnly(httpOnly);
+        cookie.setSecure(secure);
+        cookie.setPath("/");
+
+        response.addCookie(cookie);
     }
 }
