@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class TokenService {
@@ -18,7 +19,7 @@ public class TokenService {
     private final String SECRET_KEY = "secret";
     private final String ISSUER = "auth-api";
 
-    public String generateToken(UserDetailsImpl user){
+    public String generateToken(UserDetailsImpl user, int durationInHours){
         try{
             Algorithm algorithm = Algorithm.HMAC256(SECRET_KEY);
 
@@ -26,7 +27,7 @@ public class TokenService {
                     .withIssuer(ISSUER)
                     .withSubject(user.getUsername())
                     .withIssuedAt(creationDate())
-                    .withExpiresAt(expirationDate())
+                    .withExpiresAt(expirationDate(durationInHours))
                     .sign(algorithm);
         }catch (JWTCreationException ex){
             throw new JWTCreationException("Erro ao gerar o token: ", ex);
@@ -43,15 +44,15 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         }catch (JWTVerificationException ex){
-            throw new JWTVerificationException("Erro ao verificar o token: ", ex);
+            throw new JWTVerificationException("Erro ao verificar o token: " + ex.getMessage(), ex);
         }
     }
 
     private Instant creationDate(){
-        return LocalDateTime.now().toInstant(ZoneOffset.UTC);
+        return Instant.now();
     }
 
-    private Instant expirationDate(){
-        return LocalDateTime.now().plusHours(1).toInstant(ZoneOffset.UTC);
+    private Instant expirationDate(int durationInHours){
+        return Instant.now().plus(durationInHours, ChronoUnit.HOURS);
     }
 }

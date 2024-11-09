@@ -4,6 +4,7 @@ import com.auth.api.dtos.ApiResponse;
 import com.auth.api.dtos.LoginRequestDTO;
 import com.auth.api.dtos.RegisterRequestDTO;
 import com.auth.api.services.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +26,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> Login(@Valid @RequestBody LoginRequestDTO user){
-        return authService.LoginUser(user);
+    public ResponseEntity<ApiResponse> Login(@Valid @RequestBody LoginRequestDTO user, HttpServletResponse response){
+        return authService.LoginUser(user, response);
     }
 
     @GetMapping("/ativar-conta")
