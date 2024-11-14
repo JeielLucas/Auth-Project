@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/test")
-public class TesteController {
+public class    TesteController {
 
     private final UserRepository userRepository;
 

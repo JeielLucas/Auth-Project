@@ -3,6 +3,7 @@ package com.auth.api.controllers;
 import com.auth.api.dtos.ApiResponse;
 import com.auth.api.dtos.LoginRequestDTO;
 import com.auth.api.dtos.RegisterRequestDTO;
+import com.auth.api.dtos.ResetPasswordRequest;
 import com.auth.api.services.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -30,19 +31,19 @@ public class AuthController {
         return authService.LoginUser(user, response);
     }
 
-    @GetMapping("/ativar-conta")
-    public ResponseEntity activateUser(@RequestParam String token){
-        return authService.activateUser(token);
-    }
-
-    @GetMapping("/reset-password")
+    @PostMapping("/reset-password")
     public ResponseEntity requestPasswordReset(@RequestParam String email){
         return authService.requestPasswordReset(email);
     }
 
-    @GetMapping("/redefinir-senha")
-    public ResponseEntity resetPassword(@RequestParam String token, @RequestBody String password){
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity resetPassword(@RequestParam String token, @RequestBody ResetPasswordRequest password){
         return authService.resetPassword(token, password);
+    }
+
+    @GetMapping("/ativar-conta")
+    public ResponseEntity activateUser(@RequestParam String token, HttpServletResponse response){
+        return authService.activateUser(token, response);
     }
 
     @GetMapping("/validar-token")
