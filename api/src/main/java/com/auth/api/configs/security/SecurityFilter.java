@@ -89,11 +89,8 @@ public class SecurityFilter extends OncePerRequestFilter {
                 String email = tokenService.validateToken(refreshToken);
                 User user = userRepository.findByEmail(email);
                 if(user != null){
-                    UserDetailsImpl userDetails = new UserDetailsImpl(user);
+                    tokenService.generateJWTandAddCookiesToResponse(user, response, "acess_token", 60*60, false, true, 1);
 
-                    String newAcessToken = tokenService.generateToken(userDetails, 1);
-
-                    addCookieToResponse(response, "acess_token", newAcessToken, 60*60, false, true);
                     log.warn("Enviando novo acess_token");
                     authenticateUserFromToken(refreshToken);
                     return true;

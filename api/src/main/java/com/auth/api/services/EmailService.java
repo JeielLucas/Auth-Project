@@ -7,6 +7,7 @@ import com.auth.api.repositories.EmailRepository;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    @Async
     public void sendActivationEmail(User user, String token) {
         Email email = new Email();
         email.setOwnerRef("api-auth-project");
@@ -30,13 +32,14 @@ public class EmailService {
         email.setSubject("Ativação de conta - Auth Project");
         email.setText(
                 "Clique no link abaixo para ativar sua conta \n" +
-                "http://localhost:3000/ativar-conta"  // "http://localhost:8080/api/v1/auth/ativar-conta?token=" + token
+                "http://localhost:3000/ativar-conta?token=" + token
         );
         email.setCreatedAt(LocalDateTime.now());
 
         sendEmail(email);
     }
 
+    @Async
     public void sendResetPasswordEmail(User user, String token) {
         Email email = new Email();
         email.setOwnerRef("api-auth-project");
@@ -44,7 +47,7 @@ public class EmailService {
         email.setSubject("Redefinição de senha - Auth Project");
         email.setText(
                 "Clique no link abaixo para redefinir sua senha \n"
-                + "http://localhost:3000/redefinir-senha"   // "http://localhost:8080/api/v1/auth/redefinir-senha?token=" + token
+                + "http://localhost:3000/redefinir-senha?token=" + token
         );
         email.setCreatedAt(LocalDateTime.now());
 
@@ -60,7 +63,6 @@ public class EmailService {
             message.setText(email.getText());
 
             mailSender.send(message);
-
             email.setStatusEmail(StatusEmail.SENT);
         }catch (MailException e){
             email.setStatusEmail(StatusEmail.ERROR);

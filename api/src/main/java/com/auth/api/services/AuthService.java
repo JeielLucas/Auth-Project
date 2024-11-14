@@ -1,18 +1,18 @@
 package com.auth.api.services;
 
 import com.auth.api.dtos.ApiResponse;
-import com.auth.api.dtos.TokenResponse;
+import com.auth.api.dtos.ResetPasswordRequest;
 import com.auth.api.entities.User;
 import com.auth.api.entities.UserDetailsImpl;
 import com.auth.api.enums.UserRole;
-import com.auth.api.exceptions.EmailAlreadyExistsException;
-import com.auth.api.exceptions.InvalidCredentialsException;
-import com.auth.api.exceptions.MismatchException;
+import com.auth.api.exceptions.*;
 import com.auth.api.dtos.RegisterRequestDTO;
 import com.auth.api.repositories.UserRepository;
 import com.auth.api.dtos.LoginRequestDTO;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class AuthService {
 
@@ -62,15 +63,13 @@ public class AuthService {
 
         user.setActive(false);
 
-        String token = UUID.randomUUID().toString();
+        user = generateToken("activation", user);
 
-        user.setActivationToken(token);
-        user.setTokenExpiration(LocalDateTime.now().plusHours(1));
         user.setCreatedAt(LocalDateTime.now());
 
         userRepository.save(user);
 
-        emailService.sendActivationEmail(user, token);
+        emailService.sendActivationEmail(user, user.getToken());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "", "Usuário criado com sucesso"));
     }
@@ -80,103 +79,129 @@ public class AuthService {
         User user = userRepository.findByEmail(userDTO.email());
 
         if(user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false, null, "Usuário não cadastrado"));
+            throw new InvalidCredentialsException("Email não cadastrado");
         }
 
         if(!user.isActive()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false, null, "Usuário inativo, por favor, verifique seu email"));
+            throw new AccountNotActivatedException("Usuário inativo, por favor, verifique seu email");
         }
 
         var usernamePassword = new UsernamePasswordAuthenticationToken(userDTO.email(), userDTO.password());
+
         try{
             Authentication authentication = authenticationManager.authenticate(usernamePassword);
 
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            tokenService.generateJWTandAddCookiesToResponse(user, response, "acess_token",60*60, false, true, 1);
 
-            String token = tokenService.generateToken(userDetails, 1);
-            String refreshTokenString = tokenService.generateToken(userDetails, 72);
+            tokenService.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
 
-            addCookieToResponse(response, "acess_token", token, 60*60, false, true);
-
-            addCookieToResponse(response, "refresh_token", refreshTokenString, 3*24*60*60, false, true);
 
             return ResponseEntity.ok(new ApiResponse<>(true, "", "Sucess"));
         }catch (AuthenticationException e){
-            throw new InvalidCredentialsException(e.getMessage());
+            log.warn(e.getMessage());
+            throw new InvalidCredentialsException("Senha incorreta");
         }
     }
 
-    public ResponseEntity activateUser(String token){
+    public ResponseEntity<ApiResponse> activateUser(String token, HttpServletResponse response) {
 
-        User user = userRepository.findByActivationToken(token);
+        User user = userRepository.findByToken(token);
 
         if(user == null || user.getTokenExpiration().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body("Token inválido ou expirado");
+            throw new TokenVerificationException("Token inválido ou expirado");
+        }
+        if(user.isActive()){
+            throw new TokenVerificationException("Usuário já ativo");
+        }
+        if(!user.getTokenType().equals("activation")){
+            throw new TokenVerificationException("Token do tipo incorreto");
         }
 
         user.setActive(true);
-        user.setActivationToken(null);
+        user.setToken(null);
+        user.setTokenType(null);
         user.setTokenExpiration(null);
 
         userRepository.save(user);
 
-        return ResponseEntity.ok().body("Conta ativada com sucesso");
+        tokenService.generateJWTandAddCookiesToResponse(user, response, "acess_token", 60*60, false, true, 1);
+        tokenService.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
+
+        return ResponseEntity.ok().body(new ApiResponse(true, "", "Conta ativada com sucesso"));
     }
 
-    public ResponseEntity requestPasswordReset(String email){
+    public ResponseEntity<ApiResponse> requestPasswordReset(String email){
         User user = userRepository.findByEmail(email);
 
         if(user == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
-        }
-        UserDetailsImpl userDetails = new UserDetailsImpl(user);
-
-        String token = tokenService.generateToken(userDetails, 1);
-
-        emailService.sendResetPasswordEmail(user, token);
-
-        return ResponseEntity.ok().body("Verifique seu email");
-    }
-
-    public ResponseEntity resetPassword(String token, String newPassword){
-        String validationResponse = tokenService.validateToken(token);
-
-        if(validationResponse.equals("Token inválido") || validationResponse.equals("Token expirado")){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationResponse);
+            throw new InvalidCredentialsException("Email não cadastrado");
         }
 
-        User user = userRepository.findByEmail(validationResponse);
-
-        if(user == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+        if(!user.isActive()){
+            throw new AccountNotActivatedException("Usuário inativo, por favor, verifique seu email");
         }
 
-        user.setPassword(newPassword);
+        user = generateToken("reset-password", user);
+
+        emailService.sendResetPasswordEmail(user, user.getToken());
 
         userRepository.save(user);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Senha atualizada com sucesso");
+        return ResponseEntity.ok().body(new ApiResponse(true, "", "Verifique seu email"));
     }
 
-    public ResponseEntity validarToken(String token){
+    public ResponseEntity<ApiResponse> resetPassword(String token, ResetPasswordRequest passwordRequest){
+        try{
 
-        String validationResponse =  tokenService.validateToken(token);
+            User user = userRepository.findByToken(token);
 
-        if(validationResponse.equals("Token expirado") || validationResponse.equals("Token inválido")){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationResponse);
+            if(user == null){
+                throw new InvalidCredentialsException("Email não cadastrado ou token inválido");
+            }
+
+            if(user.getTokenExpiration().isBefore(LocalDateTime.now())){
+                throw new TokenVerificationException("Token expirado");
+            }
+
+            if(!user.getTokenType().equals("reset-password")){
+                throw new TokenVerificationException("Token do tipo incorreto");
+            }
+
+            if(!passwordRequest.password().equals(passwordRequest.confirmPassword())){
+                throw new MismatchException("Senhas não coincidem");
+            }
+
+            user.setPassword(passwordEncoder.encode(passwordRequest.password()));
+
+            user.setToken(null);
+            user.setTokenType(null);
+            user.setTokenExpiration(null);
+
+            userRepository.save(user);
+
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", "Senha redefinida com sucesso"));
+
+        }catch (JWTVerificationException ex){
+            throw new JWTVerificationException(ex.getMessage());
         }
-
-        return ResponseEntity.ok("Token válido");
     }
 
-    private void addCookieToResponse(HttpServletResponse response, String name, String value, int maxAge, boolean secure, boolean httpOnly){
-        Cookie cookie = new Cookie(name, value);
+    public ResponseEntity<ApiResponse> validarToken(String token){
+        try{
+            String validationResponse =  tokenService.validateToken(token);
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", validationResponse));
+        }catch (JWTVerificationException ex){
+            throw new JWTVerificationException(ex.getMessage());
+        }
+    }
 
-        cookie.setMaxAge(maxAge);
-        cookie.setHttpOnly(httpOnly);
-        cookie.setSecure(secure);
-        cookie.setPath("/");
+    private User generateToken(String type, User user){
+        String token = UUID.randomUUID().toString();
 
-        response.addCookie(cookie);
+        user.setToken(token);
+        user.setTokenType(type);
+        user.setTokenExpiration(LocalDateTime.now().plusHours(1));
+
+        return user;
     }
 }

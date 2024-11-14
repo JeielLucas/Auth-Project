@@ -26,7 +26,9 @@ public class User {
     private UserRole role;
 
     private boolean isActive;
-    private String activationToken;
+
+    private String token;
+    private String tokenType;
     private LocalDateTime tokenExpiration;
 
     private LocalDateTime createdAt;

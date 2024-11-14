@@ -6,6 +6,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -48,6 +50,20 @@ public class TokenService {
         }
     }
 
+    public void generateJWTandAddCookiesToResponse(User user, HttpServletResponse response, String name, int maxAge, boolean secure, boolean httpOnly, int duration){
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
+        String token = generateToken(userDetails, duration);
+
+        Cookie cookie = new Cookie(name, token);
+
+        cookie.setMaxAge(maxAge);
+        cookie.setHttpOnly(httpOnly);
+        cookie.setSecure(secure);
+        cookie.setPath("/");
+
+        response.addCookie(cookie);
+    }
     private Instant creationDate(){
         return Instant.now();
     }
