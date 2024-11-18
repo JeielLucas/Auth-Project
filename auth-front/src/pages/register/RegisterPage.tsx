@@ -1,17 +1,17 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
-import { useAuth } from "../../shared/hooks";
+import { useAuth } from "../../shared/hooks/Auth";
+import { Modal } from "../../shared/components/Modal/Modal";
 
 
 export const RegisterPage = () => {
     const { register } = useAuth();
-    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmEmail, setConfirmEmail] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [openModal, setOpenModal] = useState(false);
 
 
     const isEmailValid = (email: string): boolean =>{
@@ -19,7 +19,7 @@ export const RegisterPage = () => {
         return emailRegex.test(email);
     }
 
-    const handleRegistrar = async (formData: { [key:string]: string}) => { // Fazer manipulação dos dados e enviar para o back
+    const handleRegistrar = async (formData: { [key:string]: string}) => {
         setError('');
 
         if (!isEmailValid(email)) {
@@ -39,7 +39,7 @@ export const RegisterPage = () => {
 
         try{
             await register(formData.email, formData.confirmEmail, formData.password, formData.confirmPassword);
-            navigate('/dashboard')
+            setOpenModal(true);
         }catch(error){
             console.log("erro", error)
             if(error instanceof Error) {
@@ -103,6 +103,14 @@ export const RegisterPage = () => {
         },
     ];
 
+    const links= [
+        {
+            descriptionText: 'Já tem uma conta? ',
+            redirectLink: '/login',
+            linkLabel: 'Faça login',
+        }
+    ]
+
     return(
         <div className='divRegister'>
             <Form
@@ -111,9 +119,13 @@ export const RegisterPage = () => {
             onSubmit={handleRegistrar} 
             buttonText={"Entrar"} 
             buttonType={"submit"}
-            link='/login'
-            linkText= 'Já tem uma conta?'
+            links={links}
             errorMessage={error}
+            />
+            <Modal
+                mensagem="E-mail de confirmação enviado, por favor, ative sua conta para usá-la!"
+                isOpen={openModal}
+                setModalOpen={() => setOpenModal(!openModal)}
             />
         </div>
     );

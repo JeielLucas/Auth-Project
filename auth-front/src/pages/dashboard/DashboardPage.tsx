@@ -1,11 +1,10 @@
-
-
+import styles from './Dashboard.module.css'
 
 export const DashboardPage = () => {
     return(
-        <div>
-            <h2>Dashboard page</h2>
-            <p>Bem vindo(a)</p>
+        <div className={styles.container}>
+            <h2 className={styles.teste}>Dashboard page</h2>
+            <p>Bem vindo(a), você está numa página de acesso privado.</p>
         </div>
     );
 };
