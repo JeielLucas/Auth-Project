@@ -1,0 +1,35 @@
+.container{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgb(0, 0, 0, 0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px;
+    border-radius: 15px;
+    width: 40vw;
+    height: 20vh;
+    background-color: #fff;
+}
+.button{
+    background-color: #793DF3;
+    border: none;
+    border-radius: 0.6rem;
+    font-size: 1rem;
+    width: 4vw;
+    height: 4vh;
+}
+.text{
+    font-size: 1.5rem;
+}
+    

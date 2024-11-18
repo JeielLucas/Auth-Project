@@ -1,6 +1,6 @@
 import React from "react";
 import { Input } from "../Input/Input";
-import './Form.css'
+import styles from './Form.module.css'
 import { Link } from "react-router-dom";
 
 interface FormProps {
@@ -18,8 +18,12 @@ interface FormProps {
     buttonText?: string;
     buttonType?: "submit" | "reset" | "button";
     text: string;
-    link: string;
-    linkText: string;
+    links: {
+        redirectLink: string;
+        descriptionText?: string;
+        linkLabel: string;
+
+    }[];
     errorMessage?: string;
 };
 
@@ -29,8 +33,7 @@ export const Form: React.FC<FormProps> = ({
     buttonText,
     buttonType,
     text,
-    link,
-    linkText,
+    links,
     errorMessage
 }) => {
 
@@ -46,9 +49,9 @@ export const Form: React.FC<FormProps> = ({
     };
 
     return(
-        <div className='container'>
+        <div className={styles.container}>
             <h2>{text}</h2>
-            <form className='form' onSubmit={handleSubmit}>
+            <form className={styles.form} onSubmit={handleSubmit}>
                 {input.map((field) =>(
                     <Input
                         key = {field.id}
@@ -62,10 +65,17 @@ export const Form: React.FC<FormProps> = ({
                         placeholder={field.placeholder}
                     />
                 ))}
-                <button className='button' type={buttonType}>{buttonText}</button>
+                <button className={styles.button} type={buttonType}>{buttonText}</button>
             </form>
-            {errorMessage && <p className='error-message' style={{ color: 'red' }}>{errorMessage}</p>}
-            <p>{linkText} <Link to={link}>Clique aqui</Link></p>
+            {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
+            <div className={`${styles.linkContainer} ${links.length > 1 ? styles.linkContainer2 : styles.linkContainer1}`}>
+                {links.map((field) =>(
+                    <p>
+                        {field.descriptionText}
+                        <Link to ={field.redirectLink}>{field.linkLabel}</Link>
+                    </p>
+                ))}
+            </div>
         </div>
         
     );

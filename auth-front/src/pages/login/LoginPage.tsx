@@ -1,15 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
-import { useAuth } from "../../shared/hooks";
+import { useAuth } from "../../shared/hooks/Auth";
+import { Modal } from "../../shared/components/Modal/Modal";
 
 export const LoginPage = () => {
     const { login } = useAuth();
+    const [openModal, setOpenModal] = useState(false);
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    
+
+    const isEmailValid = (email: string): boolean =>{
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
 
     const handleInputChange = (id: string, value: string) =>{
         if(id === "email"){
@@ -21,14 +27,24 @@ export const LoginPage = () => {
     };
 
     const handleEntrar = async (formData: { [key: string]: string}) => {
+        setError('');
+
+        if(!isEmailValid(email)){
+            setError('Email inválido');
+            return;
+        }
+
+        if(password.length < 8){
+            setError('Senha inválida')
+            return;
+        }
+
         try{
             await login(formData.email, formData.password);
             navigate('/dashboard')
-        }catch(error){
-            setError('Erro ao fazer login, verifique suas credenciais');
+        }catch(error: any){
+            setError(error.message);
         }
-
-
     };
 
     const inputs = [
@@ -52,7 +68,17 @@ export const LoginPage = () => {
         },
     ];
 
-
+    const links= [
+        {
+            descriptionText: 'Não tem uma conta? ',
+            redirectLink: '/register',
+            linkLabel: 'Registre-se',
+        },
+        {
+            redirectLink: '/send-email-reset',
+            linkLabel: 'Esqueceu sua senha?',
+        },
+    ]
 
     return(
         <div className='divLogin'>
@@ -61,11 +87,15 @@ export const LoginPage = () => {
             input={inputs} 
             onSubmit={handleEntrar} 
             buttonText="Entrar"
-             buttonType="submit"
-             link='/register'
-             linkText= 'Já tem uma conta?'
-             errorMessage={error}
-             />
+            buttonType="submit"
+            links={links}
+            errorMessage={error}
+            />
+            <Modal
+                mensagem="E-mail de confirmação enviado, por favor, ative sua conta para usá-la!"
+                isOpen={openModal}
+                setModalOpen={() => setOpenModal(!openModal)}
+            />
         </div>
     );
 };
