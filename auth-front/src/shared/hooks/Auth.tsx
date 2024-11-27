@@ -18,11 +18,12 @@ export const useAuth = () => {
             const data = await response.json();
 
             if(!response.ok){
-                throw new Error(data.message);
+                throw new Error(data.message || 'Erro desconhecido');
             }
 
             setIsAuthenticated(true);
 
+            return data;
         }catch(error){
             console.log("Erro ao fazer login: ", error);
             throw error;
@@ -43,10 +44,12 @@ export const useAuth = () => {
             const data = await response.json();
 
             if(!(response.status === 201)){
-                throw Error(data.message)
+                throw Error(data.message || 'Erro desconhecido');
             }
+
             setIsAuthenticated(true);
 
+            return data;
         }catch(error){
             console.log("Erro ao cadastrar: ", error);
             throw error;
@@ -63,15 +66,17 @@ export const useAuth = () => {
                  credentials: 'include',
             });
 
+            const data = await response.json();
+
             if(!response.ok){
-                throw new Error('Falha ao ativar a conta')
+                throw new Error(data.message || 'Erro desconhecido')
             }
 
-            const data = await response.text();
-            alert("Teste: " + data);
             setIsAuthenticated(true);
+
+            return data;
         }catch(error){
-            console.log("Error: " + error)
+            console.log("Erro ao ativar conta: " + error)
             throw error;
         }
     };
@@ -94,7 +99,7 @@ export const useAuth = () => {
             return data;
 
         }catch(error){
-            console.log(error.message)
+            console.log('Erro ao enviar email reset de senha', error)
             throw error;
         }
     };
@@ -110,15 +115,15 @@ export const useAuth = () => {
                 credentials: 'include',
             })
 
-            const data = await response.text();
+            const data = await response.json();
 
             if(!response.ok){
-                throw new Error(data)
+                throw new Error(data.message || 'Erro desconhecido');
             }
             
-            console.log(data);
+            return data;
         }catch(error){
-            console.log(error.message)
+            console.log('Erro ao redefinir senha', error);
             throw error;
         }
     };
@@ -133,17 +138,16 @@ export const useAuth = () => {
                 credentials: 'include'
             })
 
-            const data = await response.text();
+            const data = await response.json();
 
             if(!response.ok){
-                throw new Error(data)
+                throw new Error(data.message || 'Erro desconhecido');
             }
 
-            console.log(data)
-            return true;
+            return data;
         }catch(error){
-            console.log(error.message)
-            return false;
+            console.log('Erro ao verificar token: ', error)
+            throw error;
         }
     }
 
