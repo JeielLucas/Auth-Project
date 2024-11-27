@@ -1,24 +1,68 @@
 import React from "react";
-import styles from './Modal.module.css'
+import styles from './Modal.module.css';
 
-interface ModalProps{
+interface ModalProps {
     mensagem: string;
     isOpen: boolean;
     setModalOpen: () => void;
+    input?: {
+        id: string;
+        type: string;
+        placeholder?: string;
+        value: string;
+        onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    };
+    button?: {
+        text: string;
+    }
+    onButtonClick?: () => void;
+    errorMessage?: string;
 }
 
-export const Modal: React.FC<ModalProps> = ({mensagem, isOpen, setModalOpen}) =>{
-    if(isOpen){
-        return(
+export const Modal: React.FC<ModalProps> = ({ mensagem, isOpen, setModalOpen, input, button, onButtonClick, errorMessage }) => {
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (input?.onChange) {
+            input.onChange(e);
+        }
+    };
+
+    if (isOpen) {
+        return (
             <div className={styles.container}>
                 <div className={styles.modal}>
                     <p className={styles.text}>{mensagem}</p>
-                    <button onClick={setModalOpen} className={styles.button}>Fechar</button>
+                    {input && (
+                        <form className={styles.form}>
+                            <input
+                                id={input.id}
+                                type={input.type}
+                                placeholder={input.placeholder}
+                                value={input.value}
+                                onChange={handleInputChange}
+                                className={styles.input}
+                            />
+                        </form>
+                    )}
+                    {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
+                    {button && (
+                        <button onClick={onButtonClick} className={styles.button}>
+                            {button.text}
+                        </button>
+                    )}
+                    
+                        
+                        {/*
+                        <div className={styles.buttonDiv}>
+                        <button onClick={setModalOpen} className={styles.button}>
+                            Fechar
+                        </button>
+                        </div>
+                        */}
                 </div>
             </div>
-            
-        )
+        );
     }
-    
+
     return null;
-}
+};

@@ -33,7 +33,6 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
         var token = this.recoverToken(request, "acess_token");
         if (token == null && !checkEndpointIsPublic(request)) {
             log.warn("Acesso inválido");
@@ -55,7 +54,6 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private String recoverToken(HttpServletRequest request, String name){
         Cookie[] cookies = request.getCookies();
-
         if(cookies == null){
             return null;
         }
@@ -65,7 +63,6 @@ public class SecurityFilter extends OncePerRequestFilter {
                 return cookie.getValue();
             }
         }
-
         return null;
     }
 
@@ -129,6 +126,8 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (method.equals("GET") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).contains(requestURI)) {
             return true;
         } else if (method.equals("POST") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).contains(requestURI)) {
+            return true;
+        } else if(method.equals("DELETE") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_DELETE).contains(requestURI)) {
             return true;
         }
         return false;

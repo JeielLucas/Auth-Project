@@ -11,8 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 @Service
@@ -58,7 +56,7 @@ public class TokenService {
         Cookie cookie = new Cookie(name, token);
 
         cookie.setMaxAge(maxAge);
-        cookie.setHttpOnly(httpOnly);
+        cookie.setHttpOnly(true);
         cookie.setSecure(secure);
         cookie.setPath("/");
 

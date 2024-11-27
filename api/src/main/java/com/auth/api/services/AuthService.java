@@ -1,16 +1,14 @@
 package com.auth.api.services;
 
 import com.auth.api.dtos.ApiResponse;
+import com.auth.api.dtos.LoginRequestDTO;
+import com.auth.api.dtos.RegisterRequestDTO;
 import com.auth.api.dtos.ResetPasswordRequest;
 import com.auth.api.entities.User;
-import com.auth.api.entities.UserDetailsImpl;
 import com.auth.api.enums.UserRole;
 import com.auth.api.exceptions.*;
-import com.auth.api.dtos.RegisterRequestDTO;
 import com.auth.api.repositories.UserRepository;
-import com.auth.api.dtos.LoginRequestDTO;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,7 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
@@ -46,14 +46,17 @@ public class AuthService {
     public ResponseEntity<ApiResponse> RegisterUser(RegisterRequestDTO userDTO) {
 
         if(!userDTO.email().equals(userDTO.confirmEmail())){
+            log.warn("Emails não coincidem {}, {}", userDTO.email(), userDTO.confirmEmail());
             throw new MismatchException("Emails não coincidem");
         }
 
         if(!userDTO.password().equals(userDTO.confirmPassword())){
+            log.warn("Senhas não coincidem {}, {}", userDTO.password(), userDTO.confirmPassword());
             throw new MismatchException("Senhas não coincidem");
         }
 
         if(userRepository.findByEmail(userDTO.email()) != null) {
+            log.warn("Email já cadastrado {}", userDTO.email());
             throw new EmailAlreadyExistsException("Email já cadastrado");
         }
 
@@ -71,6 +74,8 @@ public class AuthService {
 
         emailService.sendActivationEmail(user, user.getToken());
 
+        log.info("Usuário cadastrado com suceso, enviando email de ativação para {}", user.getEmail());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "", "Usuário criado com sucesso"));
     }
 
@@ -79,10 +84,12 @@ public class AuthService {
         User user = userRepository.findByEmail(userDTO.email());
 
         if(user == null) {
+            log.warn("Email não cadastrado {}", userDTO.email());
             throw new InvalidCredentialsException("Email não cadastrado");
         }
 
         if(!user.isActive()){
+            log.warn("Usuário {} inativo, necessita confirmar via email", user.getEmail());
             throw new AccountNotActivatedException("Usuário inativo, por favor, verifique seu email");
         }
 
@@ -95,6 +102,7 @@ public class AuthService {
 
             tokenService.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
 
+            log.info("Usuário {} autenticado com sucesso, as {}", user.getEmail(), new Date());
 
             return ResponseEntity.ok(new ApiResponse<>(true, "", "Sucess"));
         }catch (AuthenticationException e){
@@ -108,12 +116,15 @@ public class AuthService {
         User user = userRepository.findByToken(token);
 
         if(user == null || user.getTokenExpiration().isBefore(LocalDateTime.now())) {
+            log.warn("Token de ativação inválido ou expirou as {}", user.getTokenExpiration());
             throw new TokenVerificationException("Token inválido ou expirado");
         }
         if(user.isActive()){
+            log.warn("Usuário {} já está ativo", user.getEmail());
             throw new TokenVerificationException("Usuário já ativo");
         }
         if(!user.getTokenType().equals("activation")){
+            log.warn("O token não é do tipo activation");
             throw new TokenVerificationException("Token do tipo incorreto");
         }
 
@@ -127,6 +138,8 @@ public class AuthService {
         tokenService.generateJWTandAddCookiesToResponse(user, response, "acess_token", 60*60, false, true, 1);
         tokenService.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
 
+        log.info("Usuário {} ativado com sucesso", user.getEmail());
+
         return ResponseEntity.ok().body(new ApiResponse(true, "", "Conta ativada com sucesso"));
     }
 
@@ -134,10 +147,12 @@ public class AuthService {
         User user = userRepository.findByEmail(email);
 
         if(user == null){
+            log.warn("O email {} não está cadastrado", email);
             throw new InvalidCredentialsException("Email não cadastrado");
         }
 
         if(!user.isActive()){
+            log.warn("O usuário {} não está ativo", email);
             throw new AccountNotActivatedException("Usuário inativo, por favor, verifique seu email");
         }
 
@@ -146,6 +161,8 @@ public class AuthService {
         emailService.sendResetPasswordEmail(user, user.getToken());
 
         userRepository.save(user);
+
+        log.info("Reset de senha para o usuário {} enviado com sucesso", user.getEmail());
 
         return ResponseEntity.ok().body(new ApiResponse(true, "", "Verifique seu email"));
     }
@@ -156,18 +173,22 @@ public class AuthService {
             User user = userRepository.findByToken(token);
 
             if(user == null){
+                log.warn("O email {} não está cadastrado ou token inválido", user.getEmail());
                 throw new InvalidCredentialsException("Email não cadastrado ou token inválido");
             }
 
             if(user.getTokenExpiration().isBefore(LocalDateTime.now())){
+                log.warn("Token de redefinir senha inválido ou expirou as {}", user.getTokenExpiration());
                 throw new TokenVerificationException("Token expirado");
             }
 
             if(!user.getTokenType().equals("reset-password")){
+                log.warn("O token não é do tipo reset-password");
                 throw new TokenVerificationException("Token do tipo incorreto");
             }
 
             if(!passwordRequest.password().equals(passwordRequest.confirmPassword())){
+                log.warn("As senhas não coincidem");
                 throw new MismatchException("Senhas não coincidem");
             }
 
@@ -179,6 +200,8 @@ public class AuthService {
 
             userRepository.save(user);
 
+            log.info("Reset de senha com sucesso para o usuário {}", user.getEmail());
+
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", "Senha redefinida com sucesso"));
 
         }catch (JWTVerificationException ex){
@@ -189,8 +212,10 @@ public class AuthService {
     public ResponseEntity<ApiResponse> validarToken(String token){
         try{
             String validationResponse =  tokenService.validateToken(token);
+            log.info("Token {} validado com sucesso", token);
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", validationResponse));
         }catch (JWTVerificationException ex){
+            log.warn("A verificação no token {} falhou por conta de {}", token, ex.getMessage());
             throw new JWTVerificationException(ex.getMessage());
         }
     }

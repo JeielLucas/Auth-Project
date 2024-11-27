@@ -85,17 +85,16 @@ export const useAuth = () => {
                 },
                 credentials: 'include',
             })
-            const data = await response.text();
+            const data = await response.json();
+
             if(!response.ok){
-                if(response.status === 404){
-                    throw Error(data)
-                }else if(response.status === 403){
-                    throw new Error(data)
-                }
-                throw Error('Erro do servidor, tente novamente mais tarde.')
+                throw new Error(data.message || "Erro desconhecido")
             }
-            alert(data);
+
+            return data;
+
         }catch(error){
+            console.log(error.message)
             throw error;
         }
     };
@@ -119,6 +118,7 @@ export const useAuth = () => {
             
             console.log(data);
         }catch(error){
+            console.log(error.message)
             throw error;
         }
     };
@@ -142,6 +142,7 @@ export const useAuth = () => {
             console.log(data)
             return true;
         }catch(error){
+            console.log(error.message)
             return false;
         }
     }
