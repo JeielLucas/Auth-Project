@@ -30,37 +30,33 @@ export const Modal: React.FC<ModalProps> = ({ mensagem, isOpen, setModalOpen, in
     if (isOpen) {
         return (
             <div className={styles.container}>
-                <div className={styles.modal}>
-                    <p className={styles.text}>{mensagem}</p>
-                    {input && (
-                        <form className={styles.form}>
-                            <input
-                                id={input.id}
-                                type={input.type}
-                                placeholder={input.placeholder}
-                                value={input.value}
-                                onChange={handleInputChange}
-                                className={styles.input}
-                            />
-                        </form>
-                    )}
-                    {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
-                    {button && (
-                        <button onClick={onButtonClick} className={styles.button}>
-                            {button.text}
-                        </button>
-                    )}
-                    
-                        
-                        {/*
-                        <div className={styles.buttonDiv}>
-                        <button onClick={setModalOpen} className={styles.button}>
-                            Fechar
-                        </button>
-                        </div>
-                        */}
+            <div className={styles.modal}>
+                <div className={styles.buttonDiv}>
+                    <button onClick={setModalOpen} className={styles.button}>
+                        Fechar
+                    </button>
                 </div>
+                <p className={styles.text}>{mensagem}</p>
+                {input && (
+                    <form className={styles.form}>
+                        <input
+                            id={input.id}
+                            type={input.type}
+                            placeholder={input.placeholder}
+                            value={input.value}
+                            onChange={handleInputChange}
+                            className={styles.input}
+                        />
+                    </form>
+                )}
+                {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
+                {button && (
+                    <button onClick={onButtonClick} className={styles.button}>
+                        {button.text}
+                    </button>
+                )}
             </div>
+        </div>        
         );
     }
 

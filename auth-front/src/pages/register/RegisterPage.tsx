@@ -105,14 +105,6 @@ export const RegisterPage = () => {
         },
     ];
 
-    const links= [
-        {
-            descriptionText: 'Já tem uma conta? ',
-            redirectLink: '/login',
-            linkLabel: 'Faça login',
-        }
-    ]
-
     return(
         <div className='divRegister'>
             <Form
@@ -121,7 +113,6 @@ export const RegisterPage = () => {
             onSubmit={handleRegistrar} 
             buttonText={"Entrar"} 
             buttonType={"submit"}
-            links={links}
             errorMessage={error}
             />
               <div className={styles.linkContainer}>
