@@ -1,6 +1,5 @@
 package com.auth.api.configs.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -39,6 +38,10 @@ public class SecurityConfiguration {
             "/api/v2/test/users",
             "/api/v2/auth/ativar-conta",
     };
+    public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_DELETE = {
+            "/api/v2/auth/delete-users",
+            "api/v2/auth/delete-users",
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,6 +52,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(HttpMethod.POST, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).permitAll()
+                        .requestMatchers(HttpMethod.DELETE, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_DELETE).permitAll()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -58,7 +62,7 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowCredentials(true);

@@ -1,7 +1,6 @@
 import React from "react";
 import { Input } from "../Input/Input";
-import styles from './Form.module.css'
-import { Link } from "react-router-dom";
+import styles from './Form.module.css';
 
 interface FormProps {
     input:{
@@ -18,12 +17,6 @@ interface FormProps {
     buttonText?: string;
     buttonType?: "submit" | "reset" | "button";
     text: string;
-    links: {
-        redirectLink: string;
-        descriptionText?: string;
-        linkLabel: string;
-
-    }[];
     errorMessage?: string;
 };
 
@@ -33,7 +26,6 @@ export const Form: React.FC<FormProps> = ({
     buttonText,
     buttonType,
     text,
-    links,
     errorMessage
 }) => {
 
@@ -68,14 +60,6 @@ export const Form: React.FC<FormProps> = ({
                 <button className={styles.button} type={buttonType}>{buttonText}</button>
             </form>
             {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
-            <div className={`${styles.linkContainer} ${links.length > 1 ? styles.linkContainer2 : styles.linkContainer1}`}>
-                {links.map((field) =>(
-                    <p>
-                        {field.descriptionText}
-                        <Link to ={field.redirectLink}>{field.linkLabel}</Link>
-                    </p>
-                ))}
-            </div>
         </div>
         
     );

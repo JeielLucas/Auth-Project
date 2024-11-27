@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
 import { Modal } from "../../shared/components/Modal/Modal";
+import { Link } from "react-router-dom";
+import styles from './Register.module.css';
 
 
 export const RegisterPage = () => {
@@ -122,6 +124,12 @@ export const RegisterPage = () => {
             links={links}
             errorMessage={error}
             />
+              <div className={styles.linkContainer}>
+                <p>
+                Já tem uma conta?
+                    <Link to='/login'>Faça login</Link>
+                </p>
+            </div>
             <Modal
                 mensagem="E-mail de confirmação enviado, por favor, ative sua conta para usá-la!"
                 isOpen={openModal}

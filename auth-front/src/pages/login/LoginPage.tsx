@@ -1,16 +1,18 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
+import styles from './Login.module.css';
 import { Modal } from "../../shared/components/Modal/Modal";
 
 export const LoginPage = () => {
-    const { login } = useAuth();
+    const { login, sendResetPasswordEmail } = useAuth();
     const [openModal, setOpenModal] = useState(false);
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [loginError, setLoginError] = useState('');
+    const [modalError, setModalError] = useState('');
 
     const isEmailValid = (email: string): boolean =>{
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,15 +29,15 @@ export const LoginPage = () => {
     };
 
     const handleEntrar = async (formData: { [key: string]: string}) => {
-        setError('');
+        setLoginError('');
 
         if(!isEmailValid(email)){
-            setError('Email inválido');
+            setLoginError('Email inválido');
             return;
         }
 
         if(password.length < 8){
-            setError('Senha inválida')
+            setLoginError('Senha inválida')
             return;
         }
 
@@ -43,9 +45,19 @@ export const LoginPage = () => {
             await login(formData.email, formData.password);
             navigate('/dashboard')
         }catch(error: any){
-            setError(error.message);
+            setLoginError(error.message);
         }
     };
+
+    const handleRedefinirSenha = async (email: string) => {
+        setModalError('');
+        try{
+            await sendResetPasswordEmail(email);
+            setModalError('Redefinição enviada com sucesso, por favor, verifique seu email')
+        }catch(error: any){
+            setModalError(error.message)
+        }
+    }
 
     const inputs = [
         {
@@ -68,17 +80,6 @@ export const LoginPage = () => {
         },
     ];
 
-    const links= [
-        {
-            descriptionText: 'Não tem uma conta? ',
-            redirectLink: '/register',
-            linkLabel: 'Registre-se',
-        },
-        {
-            redirectLink: '/send-email-reset',
-            linkLabel: 'Esqueceu sua senha?',
-        },
-    ]
 
     return(
         <div className='divLogin'>
@@ -88,13 +89,34 @@ export const LoginPage = () => {
             onSubmit={handleEntrar} 
             buttonText="Entrar"
             buttonType="submit"
-            links={links}
-            errorMessage={error}
+            errorMessage={loginError}
             />
+            <div className={styles.linkContainer}>
+                <p>
+                    Não tem uma conta?
+                    <Link to='/register'>Registre-se</Link>
+                </p>
+                <p>
+                    <span style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
+                    onClick={() => setOpenModal(!openModal)}>Esqueceu sua senha?</span>
+                </p>
+            </div>
             <Modal
-                mensagem="E-mail de confirmação enviado, por favor, ative sua conta para usá-la!"
+                mensagem="Digite seu e-mail para redefinir senha"
+                input={{
+                        id: 'email',
+                        type: 'email',
+                        placeholder: 'Digite seu e-mail',
+                        value: email,
+                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
+                    }}
+                    button={{
+                        text: 'Redefinir senha',
+                    }}
+                errorMessage={modalError}
                 isOpen={openModal}
                 setModalOpen={() => setOpenModal(!openModal)}
+                onButtonClick={() => handleRedefinirSenha(email)}
             />
         </div>
     );
