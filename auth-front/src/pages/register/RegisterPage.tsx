@@ -3,7 +3,6 @@ import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
 import { Modal } from "../../shared/components/Modal/Modal";
 import { Link } from "react-router-dom";
-import styles from './Register.module.css';
 
 
 export const RegisterPage = () => {
@@ -105,6 +104,12 @@ export const RegisterPage = () => {
         },
     ];
 
+    const links = [
+        <p key="register">
+            Já tem uma conta? <Link to='/login'>Faça seu login</Link>
+        </p>
+    ];
+
     return(
         <div className='divRegister'>
             <Form
@@ -114,13 +119,8 @@ export const RegisterPage = () => {
             buttonText={"Entrar"} 
             buttonType={"submit"}
             errorMessage={error}
+            links={links}
             />
-              <div className={styles.linkContainer}>
-                <p>
-                Já tem uma conta?
-                    <Link to='/login'>Faça login</Link>
-                </p>
-            </div>
             <Modal
                 mensagem="E-mail de confirmação enviado, por favor, ative sua conta para usá-la!"
                 isOpen={openModal}

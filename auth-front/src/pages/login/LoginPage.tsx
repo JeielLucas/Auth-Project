@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
-import styles from './Login.module.css';
 import { Modal } from "../../shared/components/Modal/Modal";
 
 export const LoginPage = () => {
@@ -51,11 +50,15 @@ export const LoginPage = () => {
 
     const handleRedefinirSenha = async (email: string) => {
         setModalError('');
+        if(!isEmailValid(email)){
+            setModalError('Email inválido');
+            return;
+        }
         try{
             await sendResetPasswordEmail(email);
             setModalError('Redefinição enviada com sucesso, por favor, verifique seu email')
         }catch(error: any){
-            setModalError(error.message)
+             setModalError(error.message)
         }
     }
 
@@ -80,9 +83,21 @@ export const LoginPage = () => {
         },
     ];
 
+    const links = [
+        <p key="register">
+            Não tem uma conta? <Link to='/register'>Registre-se</Link>
+        </p>,
+        <p key="forgot-password">
+            <span
+                style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
+                onClick={() => setOpenModal(!openModal)}>
+                Esqueceu sua senha?
+            </span>
+        </p>
+    ];
 
     return(
-        <div className='divLogin'>
+        <div>
             <Form 
             text='Login page' 
             input={inputs} 
@@ -90,17 +105,8 @@ export const LoginPage = () => {
             buttonText="Entrar"
             buttonType="submit"
             errorMessage={loginError}
+            links={links}
             />
-            <div className={styles.linkContainer}>
-                <p>
-                    Não tem uma conta?
-                    <Link to='/register'>Registre-se</Link>
-                </p>
-                <p>
-                    <span style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
-                    onClick={() => setOpenModal(!openModal)}>Esqueceu sua senha?</span>
-                </p>
-            </div>
             <Modal
                 mensagem="Digite seu e-mail para redefinir senha"
                 input={{
