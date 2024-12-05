@@ -9,6 +9,8 @@ import com.auth.api.enums.UserRole;
 import com.auth.api.exceptions.*;
 import com.auth.api.repositories.UserRepository;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -98,7 +100,7 @@ public class AuthService {
         try{
             Authentication authentication = authenticationManager.authenticate(usernamePassword);
 
-            tokenService.generateJWTandAddCookiesToResponse(user, response, "acess_token",60*60, false, true, 1);
+            tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token",60*60, false, true, 1);
 
             tokenService.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
 
@@ -135,7 +137,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        tokenService.generateJWTandAddCookiesToResponse(user, response, "acess_token", 60*60, false, true, 1);
+        tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token", 60*60, false, true, 1);
         tokenService.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
 
         log.info("Usuário {} ativado com sucesso", user.getEmail());
@@ -209,15 +211,29 @@ public class AuthService {
         }
     }
 
-    public ResponseEntity<ApiResponse> validarToken(String token){
+    public ResponseEntity<ApiResponse> validarToken(HttpServletRequest request){
+        String token = extractToken(request);
         try{
             String validationResponse =  tokenService.validateToken(token);
             log.info("Token {} validado com sucesso", token);
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", validationResponse));
         }catch (JWTVerificationException ex){
             log.warn("A verificação no token {} falhou por conta de {}", token, ex.getMessage());
-            throw new JWTVerificationException(ex.getMessage());
+            throw new TokenVerificationException(ex.getMessage());
         }
+    }
+
+    private String extractToken(HttpServletRequest request){
+        Cookie[] cookies = request.getCookies();
+
+        if(cookies != null){
+            for(Cookie cookie: cookies){
+                if(cookie.getName().equals("access_token")){
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     private User generateToken(String type, User user){

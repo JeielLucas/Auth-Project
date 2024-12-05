@@ -33,7 +33,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var token = this.recoverToken(request, "acess_token");
+        var token = this.recoverToken(request, "access_token");
         if (token == null && !checkEndpointIsPublic(request)) {
             log.warn("Acesso inválido");
             sendUnauthorized(response, "Acesso inválido");
@@ -86,9 +86,9 @@ public class SecurityFilter extends OncePerRequestFilter {
                 String email = tokenService.validateToken(refreshToken);
                 User user = userRepository.findByEmail(email);
                 if(user != null){
-                    tokenService.generateJWTandAddCookiesToResponse(user, response, "acess_token", 60*60, false, true, 1);
+                    tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token", 60*60, false, true, 1);
 
-                    log.warn("Enviando novo acess_token");
+                    log.warn("Enviando novo access_token");
                     authenticateUserFromToken(refreshToken);
                     return true;
                 }else{
@@ -107,17 +107,6 @@ public class SecurityFilter extends OncePerRequestFilter {
             return false;
         }
 
-    }
-
-    private void addCookieToResponse(HttpServletResponse response, String name, String value, int maxAge, boolean secure, boolean httpOnly){
-        Cookie cookie = new Cookie(name, value);
-
-        cookie.setMaxAge(maxAge);
-        cookie.setHttpOnly(httpOnly);
-        cookie.setSecure(secure);
-        cookie.setPath("/");
-
-        response.addCookie(cookie);
     }
 
     private boolean checkEndpointIsPublic(HttpServletRequest request){

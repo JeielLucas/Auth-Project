@@ -6,6 +6,7 @@ import com.auth.api.dtos.RegisterRequestDTO;
 import com.auth.api.dtos.ResetPasswordRequest;
 import com.auth.api.repositories.UserRepository;
 import com.auth.api.services.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -50,8 +51,8 @@ public class AuthController {
     }
 
     @GetMapping("/validar-token")
-    public ResponseEntity validarToken(@RequestParam String token){
-        return authService.validarToken(token);
+    public ResponseEntity validarToken(HttpServletRequest request){
+        return authService.validarToken(request);
     }
     @DeleteMapping("delete-users")
     public void delete(){
