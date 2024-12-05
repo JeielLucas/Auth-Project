@@ -36,11 +36,10 @@ public class SecurityConfiguration {
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET = {
             "/api/v2/auth/ping",
             "/api/v2/test/users",
-            "/api/v2/auth/ativar-conta",
+            "/api/v2/auth/ativar-conta"
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_DELETE = {
-            "/api/v2/auth/delete-users",
-            "api/v2/auth/delete-users",
+            "/api/v2/auth/delete-users"
     };
 
     @Bean
@@ -53,6 +52,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).permitAll()
                         .requestMatchers(HttpMethod.DELETE, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_DELETE).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v2/auth/validar-token").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

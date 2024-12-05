@@ -19,6 +19,8 @@ public class Database implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         userRepository.deleteAll();
-        userRepository.save(new User("teste@teste.com", passwordEncoder.encode("123456"), UserRole.ADMIN));
+        User user = new User("teste@teste.com", passwordEncoder.encode("12345678"), UserRole.ADMIN);
+        user.setActive(true);
+        userRepository.save(user);
     }
 }

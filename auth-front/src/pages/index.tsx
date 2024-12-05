@@ -1,6 +1,3 @@
 export * from './dashboard/DashboardPage'
 export * from './login/LoginPage'
 export * from './register/RegisterPage'
-export * from './redefinirSenha/RedefinirSenha'
-export * from './redefinirSenha/EmailResetPassword'
-export * from './ativarConta/AtivarConta'

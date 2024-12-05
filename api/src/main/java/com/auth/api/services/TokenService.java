@@ -59,9 +59,9 @@ public class TokenService {
         cookie.setHttpOnly(true);
         cookie.setSecure(secure);
         cookie.setPath("/");
-
         response.addCookie(cookie);
     }
+
     private Instant creationDate(){
         return Instant.now();
     }
