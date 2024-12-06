@@ -43,8 +43,8 @@ export const LoginPage = () => {
         try{
             await login(formData.email, formData.password);
             navigate('/dashboard')
-        }catch(error: any){
-            setLoginError(error.message);
+        }catch(error){
+            setLoginError(error.response.data.message);
         }
     };
 

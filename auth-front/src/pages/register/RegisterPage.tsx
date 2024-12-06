@@ -42,14 +42,8 @@ export const RegisterPage = () => {
             await register(formData.email, formData.confirmEmail, formData.password, formData.confirmPassword);
             setOpenModal(true);
         }catch(error){
-            console.log("erro", error)
-            if(error instanceof Error) {
-                setError(error.message);
-                return;
-            }
-            setError('Erro desconhecido ao tentar cadastrar, por favor, tente novamente mais tarde');
+            setError(error.response.data.message);
         }
-
     };
 
     const handleInputChange = (id: string, value: string) => {
@@ -63,7 +57,6 @@ export const RegisterPage = () => {
             setConfirmPassword(value)
         }
     }
-
 
     const inputs = [
         {

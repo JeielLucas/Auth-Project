@@ -32,7 +32,7 @@ public class EmailService {
         email.setSubject("Ativação de conta - Auth Project");
         email.setText(
                 "Clique no link abaixo para ativar sua conta \n" +
-                "http://localhost:3000/ativar-conta?token=" + token
+                "http://localhost:5173/ativar-conta/" + token
         );
         email.setCreatedAt(LocalDateTime.now());
 
@@ -47,7 +47,7 @@ public class EmailService {
         email.setSubject("Redefinição de senha - Auth Project");
         email.setText(
                 "Clique no link abaixo para redefinir sua senha \n"
-                + "http://localhost:3000/redefinir-senha?token=" + token
+                + "http://localhost:5173/redefinir-senha/" + token
         );
         email.setCreatedAt(LocalDateTime.now());
 
