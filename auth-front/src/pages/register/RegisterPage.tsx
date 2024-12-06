@@ -118,6 +118,7 @@ export const RegisterPage = () => {
                 mensagem="E-mail de confirmação enviado, por favor, ative sua conta para usá-la!"
                 isOpen={openModal}
                 setModalOpen={() => setOpenModal(!openModal)}
+                botaoFechar={true}
             />
         </div>
     );

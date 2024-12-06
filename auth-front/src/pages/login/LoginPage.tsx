@@ -123,6 +123,7 @@ export const LoginPage = () => {
                 isOpen={openModal}
                 setModalOpen={() => setOpenModal(!openModal)}
                 onButtonClick={() => handleRedefinirSenha(email)}
+                botaoFechar={true}
             />
         </div>
     );

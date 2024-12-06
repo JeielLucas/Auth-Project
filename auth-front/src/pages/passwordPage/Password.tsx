@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth"
-import { Navigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { Modal } from "../../shared/components/Modal/Modal";
 
 
 export const PasswordPage = () =>{
@@ -10,6 +11,8 @@ export const PasswordPage = () =>{
     const [ confirmPassword, setConfirmPassword ] = useState('');
     const [ error, setError ] = useState('');
     const { token } = useParams<{token: string}>();
+    const navigate = useNavigate();
+    const [openModal, setOpenModal] = useState(false);
 
     const handleInputChange = (id: string, value: string) =>{
         if(id === 'password'){
@@ -28,8 +31,10 @@ export const PasswordPage = () =>{
         if(token){
             try{
                 await redefinirSenha(token, password, confirmPassword);
-
-                <Navigate to="/login" />
+                setOpenModal(true);
+                setTimeout(() =>{
+                    navigate("/login");
+                }, 5000);
             }catch(error){
                 setError(error.response.data.message);
             }
@@ -60,13 +65,21 @@ export const PasswordPage = () =>{
     ];
 
     return(
-        <Form
-            input={inputs}
-            text='Redefinir senha'
-            onSubmit={handleRedefinirSenha}
-            buttonText="Redefinir senha"
-            buttonType="submit"
-            errorMessage={error}
-        />
+        <div>
+            <Form
+                input={inputs}
+                text='Redefinir senha'
+                onSubmit={handleRedefinirSenha}
+                buttonText="Redefinir senha"
+                buttonType="submit"
+                errorMessage={error}
+            />
+            <Modal
+                mensagem={"Senha alterada com sucesso! Redirecionando a página de login, aguarde."}
+                isOpen={openModal}
+                setModalOpen={() => setOpenModal(!openModal)}
+                botaoFechar={false}
+            />
+        </div>
     )
 }

@@ -17,9 +17,10 @@ interface ModalProps {
     }
     onButtonClick?: () => void;
     errorMessage?: string;
+    botaoFechar: boolean;
 }
 
-export const Modal: React.FC<ModalProps> = ({ mensagem, isOpen, setModalOpen, input, button, onButtonClick, errorMessage }) => {
+export const Modal: React.FC<ModalProps> = ({ mensagem, isOpen, setModalOpen, input, button, onButtonClick, errorMessage, botaoFechar }) => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (input?.onChange) {
@@ -32,9 +33,12 @@ export const Modal: React.FC<ModalProps> = ({ mensagem, isOpen, setModalOpen, in
             <div className={styles.container}>
             <div className={styles.modal}>
                 <div className={styles.buttonDiv}>
-                    <button onClick={setModalOpen} className={styles.button}>
-                        Fechar
-                    </button>
+                    { botaoFechar == true ? (
+                        <button onClick={setModalOpen} className={styles.button}>
+                            Fechar
+                        </button>
+                        ) : (<></>)
+                    }
                 </div>
                 <p className={styles.text}>{mensagem}</p>
                 {input && (
