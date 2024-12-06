@@ -19,7 +19,7 @@
         buttonType?: "submit" | "reset" | "button";
         text: string;
         errorMessage?: string;
-        links: React.ReactNode[];
+        links?: React.ReactNode[];
     };
 
     export const Form: React.FC<FormProps> = ({
@@ -63,12 +63,15 @@
                     <button className={styles.button} type={buttonType}>{buttonText}</button>
                 </form>
                 {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
-                
-                <div className={`${styles.linkContainer} ${links.length > 1 ? styles.linkContainer2 : styles.linkContainer1}`}>
+                {links != undefined ? (
+                    <div className={`${styles.linkContainer} ${links.length > 1 ? styles.linkContainer2 : styles.linkContainer1}`}>
                     {links.map((link, index) => (
                         <div key={index}>{link}</div>
                     ))}
                 </div>
+                ) : (<></>)
+                }
+                
 
             </div>
             

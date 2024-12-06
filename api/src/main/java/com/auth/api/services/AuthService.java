@@ -113,18 +113,23 @@ public class AuthService {
         }
     }
 
-    public ResponseEntity<ApiResponse> activateUser(String token, HttpServletResponse response) {
-
+    public ResponseEntity<ApiResponse> activateUser(String token, HttpServletResponse response) { //Tratar erro de usuário nulo
         User user = userRepository.findByToken(token);
 
         if(user == null || user.getTokenExpiration().isBefore(LocalDateTime.now())) {
-            log.warn("Token de ativação inválido ou expirou as {}", user.getTokenExpiration());
-            throw new TokenVerificationException("Token inválido ou expirado");
+            try{
+                log.warn("Token de ativação inválido ou expirou as {}", user.getTokenExpiration());
+            }catch(NullPointerException e){
+                log.warn("Token de ativação inválido");
+            }
+            throw new InvalidTokenException("Token inválido ou expirado");
         }
+
         if(user.isActive()){
             log.warn("Usuário {} já está ativo", user.getEmail());
             throw new TokenVerificationException("Usuário já ativo");
         }
+
         if(!user.getTokenType().equals("activation")){
             log.warn("O token não é do tipo activation");
             throw new TokenVerificationException("Token do tipo incorreto");
@@ -175,8 +180,8 @@ public class AuthService {
             User user = userRepository.findByToken(token);
 
             if(user == null){
-                log.warn("O email {} não está cadastrado ou token inválido", user.getEmail());
-                throw new InvalidCredentialsException("Email não cadastrado ou token inválido");
+                log.warn("O token {} é inválido", token);
+                throw new InvalidTokenException("Token inválido");
             }
 
             if(user.getTokenExpiration().isBefore(LocalDateTime.now())){

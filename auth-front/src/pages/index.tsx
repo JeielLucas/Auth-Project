@@ -1,3 +1,5 @@
-export * from './dashboard/DashboardPage'
-export * from './login/LoginPage'
-export * from './register/RegisterPage'
+export { DashboardPage } from './dashboard/DashboardPage'
+export { LoginPage } from './login/LoginPage'
+export { RegisterPage } from './register/RegisterPage'
+export { ActivatePage } from './activatePage/activatePage'
+export { PasswordPage } from './passwordPage/Password'
