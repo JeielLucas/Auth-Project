@@ -23,7 +23,7 @@ export const RegisterPage = () => {
     const handleRegistrar = async (formData: { [key:string]: string}) => {
         setError('');
 
-        if (!isEmailValid(email)) {
+        if (!isEmailValid(email) || !isEmailValid(confirmEmail)) {
             setError('Formato de email inválido');
             return;
         }

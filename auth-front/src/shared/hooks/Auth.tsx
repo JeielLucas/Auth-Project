@@ -72,15 +72,17 @@ export const useAuth = () => {
         }
     };
 
-    const tokenVerification = async (): Promise<void> => {
+    const tokenVerification = useCallback(async () => {
         try {
-            await axiosInstance.get('/validar-token');
+            const response = await axiosInstance.get('/validar-token');
             setIsAuthenticated(true);
+            return response;
         } catch {
             console.error("Erro ao verificar token");
             setIsAuthenticated(false);
+            throw(error);
         }
-    };
+    }, []);
 
     return {
         isAuthenticated,

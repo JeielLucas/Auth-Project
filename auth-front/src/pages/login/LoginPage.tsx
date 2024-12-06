@@ -36,7 +36,7 @@ export const LoginPage = () => {
         }
 
         if(password.length < 8){
-            setLoginError('Senha inválida')
+            setLoginError('Senha muito curta')
             return;
         }
 
@@ -58,7 +58,7 @@ export const LoginPage = () => {
             await sendResetPasswordEmail(email);
             setModalError('Redefinição enviada com sucesso, por favor, verifique seu email')
         }catch(error: any){
-             setModalError(error.message)
+             setModalError(error.response.data.message)
         }
     }
 
