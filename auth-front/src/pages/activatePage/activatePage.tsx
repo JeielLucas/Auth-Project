@@ -12,7 +12,6 @@ export const ActivatePage = () => {
 
     useEffect(() => {
         if (!token) {
-            console.log("Token não encontrado na URL");
             setStatus("error");
             return;
         }
@@ -28,7 +27,6 @@ export const ActivatePage = () => {
                     navigate("/login");
                 }, 5000)
             } catch (error) {
-                console.error("Erro ao ativar conta:", error);
                 setStatus("error");
             }
         })();
