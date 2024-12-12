@@ -98,13 +98,13 @@ public class AuthService {
         try{
             Authentication authentication = authenticationManager.authenticate(usernamePassword);
 
-            tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token",60*60, false, true, 1);
+            tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token",30*60, false, true, 1);
 
             tokenService.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
 
             log.info("Usuário {} autenticado com sucesso, as {}", user.getEmail(), new Date());
 
-            return ResponseEntity.ok(new ApiResponse<>(true, "", "Sucess"));
+            return ResponseEntity.ok(new ApiResponse<>(true, "", "Login efetuado com sucesso"));
         }catch (AuthenticationException e){
             log.warn(e.getMessage());
             throw new InvalidCredentialsException("Senha incorreta");
@@ -114,20 +114,18 @@ public class AuthService {
     public ResponseEntity<ApiResponse> activateUser(String token, HttpServletResponse response) { //Tratar erro de usuário nulo
         User user = userRepository.findByToken(token);
 
-        if(user == null || user.getTokenExpiration().isBefore(LocalDateTime.now())) {
-            try{
-                log.warn("Token de ativação inválido ou expirou as {}", user.getTokenExpiration());
-            }catch(NullPointerException e){
-                log.warn("Token de ativação inválido");
-            }
-            throw new InvalidTokenException("Token inválido ou expirado");
+        if(user == null) {
+            log.warn("Token de ativação inválido");
+            throw new InvalidTokenException("Token inválido");
         }
-
+        if(user.getTokenExpiration().isBefore(LocalDateTime.now())){
+            log.warn("Token de ativação expirou as {}", user.getTokenExpiration());
+            throw new InvalidTokenException("Token expirado");
+        }
         if(user.isActive()){
             log.warn("Usuário {} já está ativo", user.getEmail());
             throw new TokenVerificationException("Usuário já ativo");
         }
-
         if(!user.getTokenType().equals("activation")){
             log.warn("O token não é do tipo activation");
             throw new TokenVerificationException("Token do tipo incorreto");
@@ -140,7 +138,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token", 60*60, false, true, 1);
+        tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token", 30*60, false, true, 1);
         tokenService.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
 
         log.info("Usuário {} ativado com sucesso", user.getEmail());
@@ -197,10 +195,11 @@ public class AuthService {
                 throw new MismatchException("Senhas não coincidem");
             }
 
-            if(passwordEncoder.encode(passwordRequest.password()).equals(user.getPassword())){
+            if(passwordEncoder.matches(passwordRequest.password(), user.getPassword()) ){ //Aqui faço verificação de texto com senha já criptografada
                 log.warn("A nova senha não pode ser igual a antiga");
-                throw new TokenVerificationException("A nova senha não pode ser igual a antiga"); // Trocar esse erro
+                throw new PasswordReuseException("A nova senha não pode ser igual a antiga");
             }
+
             user.setPassword(passwordEncoder.encode(passwordRequest.password()));
 
             user.setToken(null);
@@ -223,7 +222,7 @@ public class AuthService {
         try{
             String validationResponse =  tokenService.validateToken(token);
             log.info("Token {} validado com sucesso", token);
-            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", validationResponse));
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, validationResponse, "Token validado com sucesso"));
         }catch (JWTVerificationException ex){
             log.warn("A verificação no token {} falhou por conta de {}", token, ex.getMessage());
             throw new TokenVerificationException(ex.getMessage());
