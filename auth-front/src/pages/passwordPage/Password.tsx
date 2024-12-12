@@ -77,7 +77,7 @@ export const PasswordPage = () =>{
             <Modal
                 mensagem={"Senha alterada com sucesso! Redirecionando a página de login, aguarde."}
                 isOpen={openModal}
-                setModalOpen={() => setOpenModal(!openModal)}
+                onClose={() => setOpenModal(!openModal)}
                 botaoFechar={false}
             />
         </div>

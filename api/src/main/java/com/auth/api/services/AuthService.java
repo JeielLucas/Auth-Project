@@ -1,9 +1,6 @@
 package com.auth.api.services;
 
-import com.auth.api.dtos.ApiResponse;
-import com.auth.api.dtos.LoginRequestDTO;
-import com.auth.api.dtos.RegisterRequestDTO;
-import com.auth.api.dtos.ResetPasswordRequest;
+import com.auth.api.dtos.*;
 import com.auth.api.entities.User;
 import com.auth.api.enums.UserRole;
 import com.auth.api.exceptions.*;
@@ -23,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 
@@ -199,6 +197,10 @@ public class AuthService {
                 throw new MismatchException("Senhas não coincidem");
             }
 
+            if(passwordEncoder.encode(passwordRequest.password()).equals(user.getPassword())){
+                log.warn("A nova senha não pode ser igual a antiga");
+                throw new TokenVerificationException("A nova senha não pode ser igual a antiga"); // Trocar esse erro
+            }
             user.setPassword(passwordEncoder.encode(passwordRequest.password()));
 
             user.setToken(null);

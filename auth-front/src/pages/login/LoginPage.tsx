@@ -50,6 +50,7 @@ export const LoginPage = () => {
 
     const handleRedefinirSenha = async (email: string) => {
         setModalError('');
+        console.log('Email: ', email)
         if(!isEmailValid(email)){
             setModalError('Email inválido');
             return;
@@ -57,7 +58,7 @@ export const LoginPage = () => {
         try{
             await sendResetPasswordEmail(email);
             setModalError('Redefinição enviada com sucesso, por favor, verifique seu email')
-        }catch(error: any){
+        }catch(error){
              setModalError(error.response.data.message)
         }
     }
@@ -99,7 +100,7 @@ export const LoginPage = () => {
     return(
         <div>
             <Form 
-            text='Login page' 
+            text='Login page'
             input={inputs} 
             onSubmit={handleEntrar} 
             buttonText="Entrar"
@@ -109,21 +110,20 @@ export const LoginPage = () => {
             />
             <Modal
                 mensagem="Digite seu e-mail para redefinir senha"
+                isOpen={openModal}
+                onClose={() => setOpenModal(!openModal)}
                 input={{
-                        id: 'email',
+                        id: 'emailModal',
                         type: 'email',
                         placeholder: 'Digite seu e-mail',
                         value: email,
                         onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
                     }}
-                    button={{
+                button={{
                         text: 'Redefinir senha',
-                    }}
+                }}
                 errorMessage={modalError}
-                isOpen={openModal}
-                setModalOpen={() => setOpenModal(!openModal)}
                 onButtonClick={() => handleRedefinirSenha(email)}
-                botaoFechar={true}
             />
         </div>
     );
