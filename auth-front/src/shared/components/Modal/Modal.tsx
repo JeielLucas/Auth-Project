@@ -2,12 +2,6 @@
     import styles from './Modal.module.css';
     import { Input } from "../Input/Input";
 
-    const CloseButton: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-        <button onClick={onClose} className={styles.closeButton}>
-            Fechar
-        </button>
-    );
-
     interface ModalBaseProps {
         mensagem: string;
         isOpen: boolean;
@@ -38,15 +32,21 @@
         ... rest
         
     }) => {
-  const hasInput = (props: ModalWithInputProps): boolean => 'input' in props;
+        const hasInput = (props: ModalWithInputProps): boolean => 'input' in props;
+
         if (!isOpen) return null;
 
         return (
             <div className={styles.container}>
+                
                 <div className={styles.modal}>
                     <div className={styles.modalHeader}>
                         <p>{mensagem}</p>
-                        {botaoFechar && <CloseButton onClose={onClose} />}
+                        {botaoFechar && (
+                            <button onClick={onClose} className={styles.closeButton}>
+                              Fechar
+                          </button>
+                        )}
                     </div>
 
                     {hasInput(rest as ModalWithInputProps) && (

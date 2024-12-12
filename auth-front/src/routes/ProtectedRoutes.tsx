@@ -21,7 +21,6 @@ export const ProtectedRoutes = ( {children}: ProtectedRoutesProps) =>{
                 await tokenVerification();
                 setIsAuthenticated(true);
             }catch(error){
-                console.log(error.response.data.message);
                 setIsAuthenticated(false);
             }
         };

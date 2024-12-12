@@ -41,6 +41,10 @@ export const RegisterPage = () => {
         try{
             await register(formData.email, formData.confirmEmail, formData.password, formData.confirmPassword);
             setOpenModal(true);
+            setEmail('');
+            setConfirmEmail('');
+            setPassword('');
+            setConfirmPassword('');
         }catch(error){
             setError(error.response.data.message);
         }
@@ -109,7 +113,7 @@ export const RegisterPage = () => {
             text='Register page'
             input={inputs} 
             onSubmit={handleRegistrar} 
-            buttonText={"Entrar"} 
+            buttonText={"Cadastrar"} 
             buttonType={"submit"}
             errorMessage={error}
             links={links}

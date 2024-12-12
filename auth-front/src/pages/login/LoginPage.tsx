@@ -50,7 +50,6 @@ export const LoginPage = () => {
 
     const handleRedefinirSenha = async (email: string) => {
         setModalError('');
-        console.log('Email: ', email)
         if(!isEmailValid(email)){
             setModalError('Email inválido');
             return;
@@ -61,6 +60,12 @@ export const LoginPage = () => {
         }catch(error){
              setModalError(error.response.data.message)
         }
+    }
+
+    const onClose = () =>{
+        setModalError('');
+        setLoginError('');
+        setOpenModal(!openModal);
     }
 
     const inputs = [
@@ -111,7 +116,7 @@ export const LoginPage = () => {
             <Modal
                 mensagem="Digite seu e-mail para redefinir senha"
                 isOpen={openModal}
-                onClose={() => setOpenModal(!openModal)}
+                onClose={onClose}
                 input={{
                         id: 'emailModal',
                         type: 'email',
