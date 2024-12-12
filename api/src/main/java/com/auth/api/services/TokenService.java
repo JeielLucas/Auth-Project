@@ -56,7 +56,7 @@ public class TokenService {
         Cookie cookie = new Cookie(name, token);
 
         cookie.setMaxAge(maxAge);
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(httpOnly);
         cookie.setSecure(secure);
         cookie.setPath("/");
         response.addCookie(cookie);
