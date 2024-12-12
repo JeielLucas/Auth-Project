@@ -4,7 +4,6 @@ import com.auth.api.dtos.ApiResponse;
 import com.auth.api.dtos.LoginRequestDTO;
 import com.auth.api.dtos.RegisterRequestDTO;
 import com.auth.api.dtos.ResetPasswordRequest;
-import com.auth.api.repositories.UserRepository;
 import com.auth.api.services.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,11 +17,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final UserRepository userRepository;
 
-    public AuthController(final AuthService authService, UserRepository userRepository) {
+    public AuthController(final AuthService authService) {
         this.authService = authService;
-        this.userRepository = userRepository;
     }
 
     @PostMapping("/register")
@@ -53,10 +50,6 @@ public class AuthController {
     @GetMapping("/validar-token")
     public ResponseEntity validarToken(HttpServletRequest request){
         return authService.validarToken(request);
-    }
-    @DeleteMapping("delete-users")
-    public void delete(){
-        userRepository.deleteAll();
     }
 
     @GetMapping("/ping")
