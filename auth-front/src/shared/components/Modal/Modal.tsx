@@ -1,68 +1,74 @@
-import React from "react";
-import styles from './Modal.module.css';
+    import React from "react";
+    import styles from './Modal.module.css';
+    import { Input } from "../Input/Input";
 
-interface ModalProps {
-    mensagem: string;
-    isOpen: boolean;
-    setModalOpen: () => void;
-    input?: {
-        id: string;
-        type: string;
-        placeholder?: string;
-        value: string;
-        onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    };
-    button?: {
-        text: string;
+    const CloseButton: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+        <button onClick={onClose} className={styles.closeButton}>
+            Fechar
+        </button>
+    );
+
+    interface ModalBaseProps {
+        mensagem: string;
+        isOpen: boolean;
+        onClose: () => void;
+        botaoFechar?: boolean;
     }
-    onButtonClick?: () => void;
-    errorMessage?: string;
-    botaoFechar: boolean;
-}
 
-export const Modal: React.FC<ModalProps> = ({ mensagem, isOpen, setModalOpen, input, button, onButtonClick, errorMessage, botaoFechar }) => {
+    interface ModalWithInputProps extends ModalBaseProps {
+        input?: {
+            id: string;
+            type: string;
+            placeholder: string;
+            value: string;
+            onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+        };
+        button?: { text: string };
+        errorMessage?: string;
+        onButtonClick?: () => void;
+    }
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (input?.onChange) {
-            input.onChange(e);
-        }
-    };
+    type ModalProps = ModalBaseProps | ModalWithInputProps;
 
-    if (isOpen) {
+    export const Modal: React.FC<ModalProps> = ({
+        mensagem,
+        isOpen,
+        onClose,
+        botaoFechar = true,
+        ... rest
+        
+    }) => {
+  const hasInput = (props: ModalWithInputProps): boolean => 'input' in props;
+        if (!isOpen) return null;
+
         return (
             <div className={styles.container}>
-            <div className={styles.modal}>
-                <div className={styles.buttonDiv}>
-                    { botaoFechar == true ? (
-                        <button onClick={setModalOpen} className={styles.button}>
-                            Fechar
-                        </button>
-                        ) : (<></>)
-                    }
-                </div>
-                <p className={styles.text}>{mensagem}</p>
-                {input && (
-                    <form className={styles.form}>
-                        <input
-                            id={input.id}
-                            type={input.type}
-                            placeholder={input.placeholder}
-                            value={input.value}
-                            onChange={handleInputChange}
-                            className={styles.input}
-                        />
-                    </form>
-                )}
-                {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
-                {button && (
-                    <button onClick={onButtonClick} className={styles.button}>
-                        {button.text}
-                    </button>
-                )}
-            </div>
-        </div>        
-        );
-    }
+                <div className={styles.modal}>
+                    <div className={styles.modalHeader}>
+                        <p>{mensagem}</p>
+                        {botaoFechar && <CloseButton onClose={onClose} />}
+                    </div>
 
-    return null;
-};
+                    {hasInput(rest as ModalWithInputProps) && (
+                        <div>
+                            <div className={styles.modalInputContainer}>
+                                <Input
+                                    id={rest.input.id}
+                                    type={rest.input.type}
+                                    placeholder={rest.input.placeholder}
+                                    value={rest.input.value}
+                                    onChange={rest.input.onChange}
+                                />
+                            </div>
+                            <div className={styles.modalFooter}>
+                                <p className={styles.errorMessage}>{rest.errorMessage}</p>
+                                <button onClick={rest.onButtonClick} className={styles.button}>
+                                    {rest.button.text}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };

@@ -1,7 +1,6 @@
     import React from "react";
     import { Input } from "../Input/Input";
     import styles from './Form.module.css';
-    import { Link } from "react-router-dom";
 
     interface FormProps {
         input:{
@@ -61,9 +60,8 @@
                         />
                     ))}
                     <button className={styles.button} type={buttonType}>{buttonText}</button>
-                </form>
-                {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
-                {links != undefined ? (
+                    {errorMessage && <p className={styles.errorMessage} style={{ color: 'red' }}>{errorMessage}</p>}
+                    {links != undefined ? (
                     <div className={`${styles.linkContainer} ${links.length > 1 ? styles.linkContainer2 : styles.linkContainer1}`}>
                     {links.map((link, index) => (
                         <div key={index}>{link}</div>
@@ -71,6 +69,9 @@
                 </div>
                 ) : (<></>)
                 }
+                </form>
+                
+                
                 
 
             </div>

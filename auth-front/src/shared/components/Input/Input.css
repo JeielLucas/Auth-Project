@@ -8,12 +8,13 @@
     display: flex;
     font-size: 1.5rem;
 }
-.input{
+.input {
     border-radius: 0.6rem;
-    width: 30vw;
-    height: 5vh;
     border: none;
     outline: none;
     background-color: #d9d9d9;
+    height: 5vh;
     width: 100%;
+    font-size: clamp(1rem, 2.5vw, 1.5rem);
+    padding: 0.5rem;
 }
