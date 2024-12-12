@@ -81,12 +81,13 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private boolean generateAcessTokenByRefreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String refreshToken = this.recoverToken(request, "refresh_token");
+        System.out.println("OIIII");
         if(refreshToken != null){
             try{
                 String email = tokenService.validateToken(refreshToken);
                 User user = userRepository.findByEmail(email);
                 if(user != null){
-                    tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token", 60*60, false, true, 1);
+                    tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token", 30*60, false, true, 1);
 
                     log.warn("Enviando novo access_token");
                     authenticateUserFromToken(refreshToken);
@@ -115,8 +116,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (method.equals("GET") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).contains(requestURI)) {
             return true;
         } else if (method.equals("POST") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).contains(requestURI)) {
-            return true;
-        } else if(method.equals("DELETE") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_DELETE).contains(requestURI)) {
             return true;
         }
         return false;
