@@ -14,11 +14,11 @@ public record RegisterRequestDTO(
         String confirmEmail,
 
         @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
-        @NotBlank(message = "Senha não pode ser vazio")
+        @NotBlank(message = "Senha não pode ser vazia")
         String password,
 
         @Size(min = 8, message = "Confirmação de senha deve ter no mínimo 8 caracteres")
-        @NotBlank(message = "Confirmação de senha não pode ser vazio")
+        @NotBlank(message = "Confirmação de senha não pode ser vazia")
         String confirmPassword
 ) {
 }
