@@ -11,10 +11,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class Database implements CommandLineRunner {
 
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
+    public Database(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public void run(String... args) throws Exception {
