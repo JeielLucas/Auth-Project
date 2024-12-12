@@ -65,4 +65,10 @@ public class ValidationExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    @ExceptionHandler(PasswordReuseException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordReuseException(PasswordReuseException ex){
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    }
+
 }
