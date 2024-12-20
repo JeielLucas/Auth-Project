@@ -3,7 +3,7 @@ package com.auth.api.configs.security;
 import com.auth.api.entities.User;
 import com.auth.api.entities.UserDetailsImpl;
 import com.auth.api.repositories.UserRepository;
-import com.auth.api.services.TokenService;
+import com.auth.api.services.TokenServiceImpl;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,11 +23,11 @@ import java.util.Arrays;
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
-    private final TokenService tokenService;
+    private final TokenServiceImpl tokenServiceImpl;
     private final UserRepository userRepository;
 
-    public SecurityFilter(TokenService tokenService, UserRepository userRepository) {
-        this.tokenService = tokenService;
+    public SecurityFilter(TokenServiceImpl tokenServiceImpl, UserRepository userRepository) {
+        this.tokenServiceImpl = tokenServiceImpl;
         this.userRepository = userRepository;
     }
 
@@ -68,7 +68,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private void authenticateUserFromToken(String token){
 
-        String email = tokenService.validateToken(token);
+        String email = tokenServiceImpl.validateToken(token);
 
         User user = this.userRepository.findByEmail(email);
         if(user != null){
@@ -84,10 +84,10 @@ public class SecurityFilter extends OncePerRequestFilter {
         System.out.println("OIIII");
         if(refreshToken != null){
             try{
-                String email = tokenService.validateToken(refreshToken);
+                String email = tokenServiceImpl.validateToken(refreshToken);
                 User user = userRepository.findByEmail(email);
                 if(user != null){
-                    tokenService.generateJWTandAddCookiesToResponse(user, response, "access_token", 30*60, false, true, 1);
+                    tokenServiceImpl.generateJWTandAddCookiesToResponse(user, response, "access_token", 30*60, false, true, 1);
 
                     log.warn("Enviando novo access_token");
                     authenticateUserFromToken(refreshToken);
