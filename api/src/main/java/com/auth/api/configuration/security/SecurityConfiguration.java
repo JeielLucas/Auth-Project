@@ -1,4 +1,4 @@
-package com.auth.api.configs.security;
+package com.auth.api.configuration.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,12 +30,17 @@ public class SecurityConfiguration {
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST = {
             "/api/v2/auth/login",
             "/api/v2/auth/register",
-            "/api/v2/auth/reset-password",
-            "/api/v2/auth/redefinir-senha",
+            "/api/v2/auth/forgot-password",
+            "/api/v2/auth/login/google",
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET = {
             "/api/v2/auth/ping",
-            "/api/v2/auth/ativar-conta"
+            "/api/v2/auth/users/activate",
+
+            "/api/v2/auth/users",
+    };
+    public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PUT = {
+            "/api/v2/auth/reset-password",
     };
 
     @Bean
@@ -43,11 +48,14 @@ public class SecurityConfiguration {
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> {})
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(HttpMethod.POST, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v2/auth/validar-token").authenticated()
+                        .requestMatchers(HttpMethod.PUT, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PUT).permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().denyAll()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -57,10 +65,12 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        corsConfiguration.setAllowedOrigins(Arrays.asList("https://auth-front.jeiel.com.br", "http://localhost:5173"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowCredentials(true);
+
+        corsConfiguration.setExposedHeaders(Arrays.asList("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
