@@ -1,19 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
 import { Modal } from "../../shared/components/Modal/Modal";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { AxiosError } from "axios";
 
 
 export const RegisterPage = () => {
-    const { register } = useAuth();
+    const { register, loginGoogle} = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmEmail, setConfirmEmail] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [openModal, setOpenModal] = useState(false);
+    const emailData = useSelector((state: RootState) => state.auth.emailData);
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        if (emailData) {
+            setEmail(emailData);
+            setConfirmEmail(emailData)
+        }
+    }, [emailData]);
 
     const isEmailValid = (email: string): boolean =>{
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,7 +45,7 @@ export const RegisterPage = () => {
             return;
         }
 
-        if(!(password === confirmPassword) || password.length < 8){
+        if(password !== confirmPassword || password.length < 8){
             setError('Senha inválida (diferentes ou tamanho menor que 8 caracteres)');
             return;
         }
@@ -45,8 +57,12 @@ export const RegisterPage = () => {
             setConfirmEmail('');
             setPassword('');
             setConfirmPassword('');
-        }catch(error){
-            setError(error.response.data.message);
+        }catch(error: unknown){
+            if(error instanceof AxiosError){
+                setError(error.response?.data.message || "Erro desconhecido")
+            }else{
+                setError("Erro desconhecido")
+            }
         }
     };
 
@@ -107,6 +123,45 @@ export const RegisterPage = () => {
         </p>
     ];
 
+    const HandleLoginGoogle = async(credentialResponse: CredentialResponse) => {
+
+        const token = credentialResponse?.credential;
+
+        if (typeof token !== "string") {
+            setError("Credenciais inválidas");
+            return;
+        }
+
+        try{
+            const response = await loginGoogle(token);
+
+            if(response.status === 200){
+                navigate("/dashboard");
+            }
+
+        }catch(error: unknown){
+            if(error instanceof AxiosError){
+                if(error.response?.status === 422 && emailData){
+                    setEmail(emailData);
+                    setConfirmEmail(emailData)
+                }
+                setError(error.response?.data.message || "Erro desconhecido");
+            }else{
+                setError("Erro desconhecido");
+            }
+        }
+    }
+
+    const auth = (
+        <GoogleLogin
+            onSuccess={HandleLoginGoogle}
+            onError={() => {
+                console.log('error')
+            }}
+        />  
+    )
+    
+
     return(
         <div className='divRegister'>
             <Form
@@ -117,6 +172,7 @@ export const RegisterPage = () => {
             buttonType={"submit"}
             errorMessage={error}
             links={links}
+            auth={auth}
             />
             <Modal
                 mensagem="E-mail de confirmação enviado, por favor, ative sua conta para usá-la!"

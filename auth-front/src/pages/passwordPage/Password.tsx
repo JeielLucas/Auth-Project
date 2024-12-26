@@ -3,6 +3,7 @@ import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth"
 import { useNavigate, useParams } from "react-router-dom";
 import { Modal } from "../../shared/components/Modal/Modal";
+import { AxiosError } from "axios";
 
 
 export const PasswordPage = () =>{
@@ -35,8 +36,12 @@ export const PasswordPage = () =>{
                 setTimeout(() =>{
                     navigate("/login");
                 }, 5000);
-            }catch(error){
-                setError(error.response.data.message);
+            }catch(error: unknown){
+                if(error instanceof AxiosError){
+                    setError(error.response?.data.message || "Erro desconhecido")
+                }else{
+                    setError("Erro desconhecido")
+                }
             }
         }
     };
