@@ -1,7 +1,9 @@
 package com.auth.api.handlers;
 
+import com.auth.api.dtos.ApiResponse;
 import com.auth.api.dtos.ErrorResponse;
 import com.auth.api.exceptions.*;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.util.*;
 
 @RestControllerAdvice
@@ -69,6 +72,36 @@ public class ValidationExceptionHandler {
     public ResponseEntity<ErrorResponse> handlePasswordReuseException(PasswordReuseException ex){
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    }
+
+    @ExceptionHandler(UserNotRegisteredException.class)
+    public ResponseEntity<ApiResponse> handleUserNotRegisteredException(UserNotRegisteredException ex){
+        HashMap<String, String> response = new HashMap<>();
+        response.put("email", ex.getEmail());
+
+        ApiResponse apiResponse = new ApiResponse(
+                false,
+                response,
+                ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(apiResponse);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex){
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                ex.getMessage(),
+                Collections.singletonList(ex.getMessage())
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(InvalidOperationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOperationException(InvalidOperationException ex){
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
 }

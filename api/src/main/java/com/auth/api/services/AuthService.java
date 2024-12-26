@@ -7,12 +7,13 @@ import com.auth.api.dtos.ResetPasswordRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 public interface AuthService {
 
     ResponseEntity<ApiResponse> login(LoginRequestDTO loginRequestDTO, HttpServletResponse httpServletResponse);
 
-    ResponseEntity<ApiResponse> googleLogin(String token);
+    ResponseEntity<ApiResponse> loginWithGoogle(String token, HttpServletResponse httpServletResponse);
 
     ResponseEntity<ApiResponse> register(RegisterRequestDTO registerRequestDTO);
 
@@ -22,6 +23,6 @@ public interface AuthService {
 
     ResponseEntity<ApiResponse> resetPassword(String token, ResetPasswordRequest passwordRequest);
 
-    ResponseEntity<ApiResponse> validarToken(HttpServletRequest request);
+    ResponseEntity<ApiResponse> validateToken(HttpServletRequest request, HttpServletResponse response);
 
 }
