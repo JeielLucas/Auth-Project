@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../shared/hooks/Auth";
 import { useNavigate, useParams } from "react-router-dom";
+import styles from './style.module.css'
+import { AxiosError } from "axios";
 
 export const ActivatePage = () => {
     const { ativarConta } = useAuth();
@@ -25,25 +27,20 @@ export const ActivatePage = () => {
                 setStatus("success");
                 setTimeout(() => {
                     navigate("/login");
-                }, 5000)
-            } catch (error) {
-                setStatus("error");
+                }, 4000)
+            } catch (error: unknown) {
+                if(error instanceof AxiosError){
+                    setStatus(error.response?.data.message);
+                }else{
+                    setStatus("error");
+                }
             }
         })();
 
     }, [token, ativarConta, navigate]);
-    
-    const divStyle = {
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        textAlign: "center" as "center",
-        fontSize: '1.2rem',
-    };
 
      return (
-        <div style={divStyle}>
+        <div className={styles.div}>
             {status === "loading" && <div>Ativando conta...</div>}
             {status === "success" && <div>Conta ativada com sucesso! Você será redirecionado para página de login.</div>}
             {status === "error" && <div>Erro ao ativar conta. Por favor, tente novamente.</div>}

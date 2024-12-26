@@ -1,16 +1,18 @@
 import { useCallback, useState } from "react";
 import axiosInstance from "../../axiosConfig";
+import { useDispatch } from "react-redux";
+import { setEmailData } from "../../redux/authSlice";
+import { AxiosError } from "axios";
 
 export const useAuth = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isActive, setIsActive] = useState(false);
+    const dispatch = useDispatch();
 
     const login = async (email: string, password: string) => {
-
             const response = await axiosInstance.post('/login', { email, password });
             setIsAuthenticated(true);
             return response.data;
-    
     };
 
     const register = async (email: string, confirmEmail: string, password: string, confirmPassword: string) => {
@@ -30,7 +32,7 @@ export const useAuth = () => {
     };
 
     const ativarConta = useCallback(async (token: string) => {
-        const response = await axiosInstance.get(`/ativar-conta?token=${token}`);
+        const response = await axiosInstance.get(`/users/activate?token=${token}`);
         setIsActive(true);
         setIsAuthenticated(true);
         return response.data;
@@ -38,12 +40,12 @@ export const useAuth = () => {
     }, []);
 
     const sendResetPasswordEmail = async (email: string) => {
-        const response = await axiosInstance.post(`/reset-password?email=${email}`);
+        const response = await axiosInstance.post(`/forgot-password?email=${email}`);
         return response.data;
     };
 
     const redefinirSenha = async (token: string, password: string, confirmPassword: string) => {
-        const response = await axiosInstance.post(`/redefinir-senha?token=${token}`, {
+        const response = await axiosInstance.put(`/reset-password?token=${token}`, {
                 password,
                 confirmPassword,
         });
@@ -52,7 +54,7 @@ export const useAuth = () => {
 
     const tokenVerification = useCallback(async () => {
         try {
-            const response = await axiosInstance.get('/validar-token');
+            const response = await axiosInstance.get('/validate');
             setIsAuthenticated(true);
             return response;
         } catch(error){
@@ -60,6 +62,22 @@ export const useAuth = () => {
             throw error;
         }
     }, []);
+
+    const loginGoogle = async (credentialResponse: string) =>{
+        try{
+            const response = await axiosInstance.post(`/login/google?token=${credentialResponse}`)
+            return response;
+        }catch(error: unknown){
+            if(error instanceof AxiosError){
+                if(error.response && error.response.data && error.response.data.data && error.response.data.data.email){
+                    const email = error.response.data.data.email;
+                    dispatch(setEmailData(email))
+                }
+            }
+            
+            throw error;
+        }
+    };
 
     return {
         isAuthenticated,
@@ -70,5 +88,6 @@ export const useAuth = () => {
         sendResetPasswordEmail,
         tokenVerification,
         isActive,
+        loginGoogle,
     };
 };

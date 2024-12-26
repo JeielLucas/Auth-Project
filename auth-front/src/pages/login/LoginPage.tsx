@@ -3,15 +3,18 @@ import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
 import { Modal } from "../../shared/components/Modal/Modal";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { AxiosError } from "axios";
 
 export const LoginPage = () => {
-    const { login, sendResetPasswordEmail } = useAuth();
+    const { login, sendResetPasswordEmail, loginGoogle } = useAuth();
     const [openModal, setOpenModal] = useState(false);
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState('');
     const [modalError, setModalError] = useState('');
+    const [modalEmail, setModalEmail] = useState('');
 
     const isEmailValid = (email: string): boolean =>{
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,8 +46,12 @@ export const LoginPage = () => {
         try{
             await login(formData.email, formData.password);
             navigate('/dashboard')
-        }catch(error){
-            setLoginError(error.response.data.message);
+        }catch(error: unknown){
+            if(error instanceof AxiosError){
+                setLoginError(error.response?.data.message || "Erro desconhecido")
+            }else{
+                setLoginError("Erro desconhecido")
+            }
         }
     };
 
@@ -57,10 +64,14 @@ export const LoginPage = () => {
         try{
             await sendResetPasswordEmail(email);
             setModalError('Redefinição enviada com sucesso, por favor, verifique seu email')
-        }catch(error){
-             setModalError(error.response.data.message)
+        }catch(error: unknown){
+            if(error instanceof AxiosError){
+                setModalError(error.response?.data.message || "Erro desconhecido")
+            }else{
+                setModalError("Erro desconhecido")
+            }
         }
-    }
+    }   
 
     const onClose = () =>{
         setModalError('');
@@ -102,6 +113,44 @@ export const LoginPage = () => {
         </p>
     ];
 
+    const HandleLoginGoogle = async(credentialResponse: CredentialResponse) => {
+        
+        const token = credentialResponse?.credential;
+
+        if (typeof token !== "string") {
+            setLoginError("Credenciais inválidas");
+            return;
+        }
+        
+        try{
+            const response = await loginGoogle(token);
+            
+            if(response?.status === 200){
+                navigate("/dashboard");
+            }
+
+        }catch(error: unknown){
+            if(error instanceof AxiosError){
+                if ((error.response?.status === 401 || error.response?.status === 422) && error.response?.data.data?.email) {
+                    navigate("/register");
+                    return;
+                }
+                setLoginError(error.response?.data.message || "Erro desconhecido");
+            }else{
+                setLoginError("Erro desconhecido");
+            }
+        }
+    }
+
+    const auth = (
+        <GoogleLogin
+            onSuccess={HandleLoginGoogle}
+            onError={() => {
+                console.log('error')
+            }}
+        />  
+    )
+
     return(
         <div>
             <Form 
@@ -112,6 +161,7 @@ export const LoginPage = () => {
             buttonType="submit"
             errorMessage={loginError}
             links={links}
+            auth={auth}
             />
             <Modal
                 mensagem="Digite seu e-mail para redefinir senha"
@@ -121,14 +171,14 @@ export const LoginPage = () => {
                         id: 'emailModal',
                         type: 'email',
                         placeholder: 'Digite seu e-mail',
-                        value: email,
-                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value),
+                        value: modalEmail,
+                        onChange: (e: React.ChangeEvent<HTMLInputElement>) => setModalEmail(e.target.value),
                     }}
                 button={{
                         text: 'Redefinir senha',
                 }}
                 errorMessage={modalError}
-                onButtonClick={() => handleRedefinirSenha(email)}
+                onButtonClick={() => handleRedefinirSenha(modalEmail)}
             />
         </div>
     );
