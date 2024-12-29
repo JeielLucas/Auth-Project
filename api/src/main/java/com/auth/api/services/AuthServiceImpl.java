@@ -1,22 +1,16 @@
 package com.auth.api.services;
 
-import com.auth.api.dtos.ApiResponse;
-import com.auth.api.dtos.LoginRequestDTO;
-import com.auth.api.dtos.RegisterRequestDTO;
-import com.auth.api.dtos.ResetPasswordRequest;
+import com.auth.api.dtos.*;
 import com.auth.api.entities.User;
 import com.auth.api.enums.UserRole;
 import com.auth.api.exceptions.*;
 import com.auth.api.repositories.UserRepository;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,20 +28,18 @@ public class AuthServiceImpl implements AuthService{
     private final AuthenticationManager authenticationManager;
     private final TokenServiceImpl tokenServiceImpl;
     private final CookieServiceImpl cookieServiceImpl;
-    private final JWTServiceImpl jwtServiceImpl;
 
-    public AuthServiceImpl(UserRepository userRepository, EmailService emailService, BCryptPasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenServiceImpl tokenServiceImpl, CookieServiceImpl cookieServiceImpl, JWTServiceImpl jwtServiceImpl) {
+    public AuthServiceImpl(UserRepository userRepository, EmailService emailService, BCryptPasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenServiceImpl tokenServiceImpl, CookieServiceImpl cookieServiceImpl) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.tokenServiceImpl = tokenServiceImpl;
         this.cookieServiceImpl = cookieServiceImpl;
-        this.jwtServiceImpl = jwtServiceImpl;
     }
 
     @Override
-    public ResponseEntity<ApiResponse> register(RegisterRequestDTO userDTO) {
+    public ResponseEntity<ApiResponseDTO> register(RegisterRequestDTO userDTO) {
 
         validateEmails(userDTO);
 
@@ -57,7 +49,7 @@ public class AuthServiceImpl implements AuthService{
 
         String encryptedPassword = passwordEncoder.encode(userDTO.password());
         User user = new User(userDTO.email(), encryptedPassword, UserRole.USER);
-        user.setActive(false);
+        user.setActive(true);
         user.setCreatedAt(LocalDateTime.now());
 
         tokenServiceImpl.generateUUIDToken("activation", user);
@@ -68,11 +60,13 @@ public class AuthServiceImpl implements AuthService{
 
         log.info("Usuário cadastrado com suceso, enviando email de ativação para {}", user.getEmail());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "", "Usuário criado com sucesso"));
+        UserResponseDTO userResponseDTO = new UserResponseDTO(user.getEmail(), user.getRole(), user.getCreatedAt());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponseDTO<>(true, userResponseDTO, "Usuário criado com sucesso"));
     }
 
     @Override
-    public ResponseEntity<ApiResponse> login(LoginRequestDTO userDTO, HttpServletResponse response) {
+    public ResponseEntity<ApiResponseDTO> login(LoginRequestDTO userDTO, HttpServletResponse response) {
 
         User user = userExists(userDTO.email());
 
@@ -83,11 +77,11 @@ public class AuthServiceImpl implements AuthService{
         issueJwtCookies(user, response);
         log.info("Usuário {} autenticado com sucesso, as {}", user.getEmail(), new Date());
 
-        return ResponseEntity.ok(new ApiResponse<>(true, "", "Login efetuado com sucesso"));
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, "", "Login efetuado com sucesso"));
     }
 
     @Override
-    public ResponseEntity<ApiResponse> activateUser(String token, HttpServletResponse response) {
+    public ResponseEntity<ApiResponseDTO> activateUser(String token, HttpServletResponse response) {
 
         User user = tokenServiceImpl.validateAndGetUserByToken("activation", token);
 
@@ -107,11 +101,11 @@ public class AuthServiceImpl implements AuthService{
 
         log.info("Usuário {} ativado com sucesso", user.getEmail());
 
-        return ResponseEntity.ok().body(new ApiResponse(true, "", "Conta ativada com sucesso"));
+        return ResponseEntity.ok().body(new ApiResponseDTO(true, "", "Conta ativada com sucesso"));
     }
 
     @Override
-    public ResponseEntity<ApiResponse> requestPasswordReset(String email){
+    public ResponseEntity<ApiResponseDTO> requestPasswordReset(String email){
         User user = userExists(email);
 
         inactivedUser(user);
@@ -124,15 +118,14 @@ public class AuthServiceImpl implements AuthService{
 
         log.info("Reset de senha para o usuário {} enviado com sucesso", user.getEmail());
 
-        return ResponseEntity.ok().body(new ApiResponse(true, "", "Verifique seu email"));
+        return ResponseEntity.ok().body(new ApiResponseDTO(true, "", "Verifique seu email"));
     }
 
     @Override
-    public ResponseEntity<ApiResponse> resetPassword(String token, ResetPasswordRequest passwordRequest){
+    public ResponseEntity<ApiResponseDTO> resetPassword(String token, ResetPasswordRequest passwordRequest){
         User user = tokenServiceImpl.validateAndGetUserByToken("reset-password", token);
 
         validatePasswords(passwordRequest.password(), passwordRequest.confirmPassword());
-
 
         if(passwordEncoder.matches(passwordRequest.password(), user.getPassword()) ){
             log.warn("A nova senha não pode ser igual a antiga");
@@ -149,29 +142,11 @@ public class AuthServiceImpl implements AuthService{
 
         log.info("Reset de senha com sucesso para o usuário {}", user.getEmail());
 
-        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "", "Senha redefinida com sucesso"));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponseDTO<>(true, "", "Senha redefinida com sucesso"));
     }
 
     @Override
-    public ResponseEntity<ApiResponse> validateToken(HttpServletRequest request, HttpServletResponse response){
-        String token = cookieServiceImpl.findCookieValue(request, "access_token");
-        try{
-            String validationResponse =  jwtServiceImpl.validateToken(token);
-            log.info("Token {} validado com sucesso", token);
-            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, validationResponse, "Token validado com sucesso"));
-        }catch (JWTVerificationException ex){
-            var isTokenGenerate = tokenServiceImpl.generateAcessTokenByRefreshToken(request, response);
-            if (!isTokenGenerate) {
-                log.warn("A verificação no token {} falhou por conta de {}", token, ex.getMessage());
-                throw new TokenVerificationException(ex.getMessage());
-            }
-
-            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, null, "Refresh token validado com sucesso"));
-        }
-    }
-
-    @Override
-    public ResponseEntity<ApiResponse> loginWithGoogle(String token, HttpServletResponse httpResponse){
+    public ResponseEntity<ApiResponseDTO> loginWithGoogle(String token, HttpServletResponse httpResponse){
         String email = tokenServiceImpl.extractGoogleEmail(token);
 
         User user = userRepository.findByEmail(email);
@@ -180,7 +155,7 @@ public class AuthServiceImpl implements AuthService{
             log.info("Usuário {} precisa cadastrar antes de fazer o login", email);
             HashMap<String, String> response = new HashMap<>();
             response.put("email", email);
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ApiResponse<>(false, response, "Usuario precisa se cadastrar"));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ApiResponseDTO<>(false, response, "Usuario precisa se cadastrar"));
         }
 
         inactivedUser(user);
@@ -191,7 +166,7 @@ public class AuthServiceImpl implements AuthService{
 
         log.info("Usuário {} autenticado com sucesso, as {}", user.getEmail(), new Date());
 
-        return ResponseEntity.ok(new ApiResponse<>(true, user.getEmail(), "Login efetuado com sucesso"));
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, user.getEmail(), "Login efetuado com sucesso"));
     };
 
     private void inactivedUser(User user){
@@ -218,7 +193,7 @@ public class AuthServiceImpl implements AuthService{
     private void ensureEmailNotRegistered(String email){
         if(userRepository.findByEmail(email) != null) {
             log.warn("Email já cadastrado {}", email);
-            throw new EmailAlreadyExistsException("Email já cadastrado");
+            throw new EmailAlreadyExistsException("Email " + email + " já está cadastrado");
         }
     }
 
@@ -231,7 +206,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
     private void issueJwtCookies(User user, HttpServletResponse response){
-        cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "access_token",20, false, true, 1);
+        cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "access_token", 30*60, false, true, 1);
 
         cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
     }
@@ -246,4 +221,5 @@ public class AuthServiceImpl implements AuthService{
 
         return user;
     }
+
 }
