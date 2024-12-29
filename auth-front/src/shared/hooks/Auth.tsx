@@ -45,7 +45,7 @@ export const useAuth = () => {
     };
 
     const redefinirSenha = async (token: string, password: string, confirmPassword: string) => {
-        const response = await axiosInstance.put(`/reset-password?token=${token}`, {
+        const response = await axiosInstance.patch(`/reset-password?token=${token}`, {
                 password,
                 confirmPassword,
         });
@@ -54,7 +54,7 @@ export const useAuth = () => {
 
     const tokenVerification = useCallback(async () => {
         try {
-            const response = await axiosInstance.get('/validate');
+            const response = await axiosInstance.get('/check');
             setIsAuthenticated(true);
             return response;
         } catch(error){
