@@ -34,10 +34,13 @@ public class SecurityConfiguration {
             "/api/v2/auth/login/google",
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET = {
-            "/api/v2/auth/ping",
             "/api/v2/auth/users/activate",
-
             "/api/v2/auth/users",
+            "/api/v2/auth/check",
+            "/api-docs/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/api/v2/auth/ping"
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PUT = {
             "/api/v2/auth/reset-password",
@@ -55,8 +58,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).permitAll()
                         .requestMatchers(HttpMethod.PUT, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PUT).permitAll()
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .anyRequest().denyAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

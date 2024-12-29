@@ -3,8 +3,6 @@ package com.auth.api.configuration.security;
 import com.auth.api.exceptions.UnauthorizedException;
 import com.auth.api.services.CookieServiceImpl;
 import com.auth.api.services.JWTServiceImpl;
-import com.auth.api.services.TokenServiceImpl;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,43 +18,30 @@ import java.util.Arrays;
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
-    private final TokenServiceImpl tokenServiceImpl;
-    private final CookieServiceImpl cookieServiceImpl;
     private final JWTServiceImpl jwtServiceImpl;
+    private final CookieServiceImpl cookieServiceImpl;
 
-    public SecurityFilter(TokenServiceImpl tokenServiceImpl, CookieServiceImpl cookieServiceImpl, JWTServiceImpl jwtServiceImpl) {
-        this.tokenServiceImpl = tokenServiceImpl;
-        this.cookieServiceImpl = cookieServiceImpl;
+    public SecurityFilter(JWTServiceImpl jwtServiceImpl, CookieServiceImpl cookieServiceImpl) {
         this.jwtServiceImpl = jwtServiceImpl;
+        this.cookieServiceImpl = cookieServiceImpl;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var token = cookieServiceImpl.findCookieValue(request, "access_token");
-
-        if(checkEndpointIsPublic(request)){
-            filterChain.doFilter(request, response);
-            return;
-        }
-        try{
-            jwtServiceImpl.authenticateUserFromToken(token);
-        }catch (JWTVerificationException e) {
-            if (!tokenServiceImpl.generateAcessTokenByRefreshToken(request, response)) {
-                log.warn("Acesso inválido");
-                throw new UnauthorizedException("Acesso invalido");
+        if(token != null){
+            try{
+                jwtServiceImpl.validateAccessToken(request, response);
+                System.out.println(2);
+                filterChain.doFilter(request, response);
+            }catch (UnauthorizedException ex){
+                System.out.println(1);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write(ex.getMessage());
             }
-            filterChain.doFilter(request, response);
         }
+        filterChain.doFilter(request, response);
 
-    }
 
-    private boolean checkEndpointIsPublic(HttpServletRequest request){
-        String requestURI = request.getRequestURI();
-        String method = request.getMethod();
-        if (method.equals("GET") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).contains(requestURI)) {
-            return true;
-        } else if (method.equals("POST") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).contains(requestURI)) {
-            return true;
-        } else return method.equals("PUT") && Arrays.asList(SecurityConfiguration.ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PUT).contains(requestURI);
     }
 }
