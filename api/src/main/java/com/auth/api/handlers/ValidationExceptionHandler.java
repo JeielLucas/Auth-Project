@@ -1,9 +1,8 @@
 package com.auth.api.handlers;
 
-import com.auth.api.dtos.ApiResponse;
-import com.auth.api.dtos.ErrorResponse;
+import com.auth.api.dtos.ApiResponseDTO;
+import com.auth.api.dtos.ErrorResponseDTO;
 import com.auth.api.exceptions.*;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -11,14 +10,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
 
 @RestControllerAdvice
 public class ValidationExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex){
+    public ResponseEntity<ErrorResponseDTO> handleValidationExceptions(MethodArgumentNotValidException ex){
         String errorMessage =
                 ex.getBindingResult()
                         .getFieldErrors()
@@ -27,81 +26,74 @@ public class ValidationExceptionHandler {
                         .findFirst()
                         .orElse("Erro desconhecido");
 
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), errorMessage, Collections.singletonList(ex.getMessage()));
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), errorMessage, Collections.singletonList(ex.getMessage()));
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponseDTO);
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex){
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    public ResponseEntity<ErrorResponseDTO> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex){
+        System.out.println(ex.getMessage());
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.CONFLICT.value(), "Email já cadastrado", Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponseDTO);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(InvalidCredentialsException ex){
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    public ResponseEntity<ErrorResponseDTO> handleInvalidCredentialsException(InvalidCredentialsException ex){
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponseDTO);
     }
 
     @ExceptionHandler(MismatchException.class)
-    public ResponseEntity<ErrorResponse> handlMismatchException(MismatchException ex){
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    public ResponseEntity<ErrorResponseDTO> handlMismatchException(MismatchException ex){
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponseDTO);
     }
 
     @ExceptionHandler(AccountNotActivatedException.class)
-    public ResponseEntity<ErrorResponse> handleAccountNotActivatedException(AccountNotActivatedException ex){
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    public ResponseEntity<ErrorResponseDTO> handleAccountNotActivatedException(AccountNotActivatedException ex){
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponseDTO);
     }
 
     @ExceptionHandler(TokenVerificationException.class)
-    public ResponseEntity<ErrorResponse> handleJWTVerificationException(TokenVerificationException ex){
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    public ResponseEntity<ErrorResponseDTO> handleJWTVerificationException(TokenVerificationException ex){
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponseDTO);
     }
 
     @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex){
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    public ResponseEntity<ErrorResponseDTO> handleInvalidTokenException(InvalidTokenException ex){
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponseDTO);
     }
 
     @ExceptionHandler(PasswordReuseException.class)
-    public ResponseEntity<ErrorResponse> handlePasswordReuseException(PasswordReuseException ex){
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    public ResponseEntity<ErrorResponseDTO> handlePasswordReuseException(PasswordReuseException ex){
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.UNPROCESSABLE_ENTITY.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponseDTO);
     }
 
     @ExceptionHandler(UserNotRegisteredException.class)
-    public ResponseEntity<ApiResponse> handleUserNotRegisteredException(UserNotRegisteredException ex){
+    public ResponseEntity<ApiResponseDTO> handleUserNotRegisteredException(UserNotRegisteredException ex){
         HashMap<String, String> response = new HashMap<>();
         response.put("email", ex.getEmail());
 
-        ApiResponse apiResponse = new ApiResponse(
+        ApiResponseDTO apiResponseDTO = new ApiResponseDTO(
                 false,
                 response,
                 ex.getMessage()
         );
 
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(apiResponse);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(apiResponseDTO);
     }
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex){
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                ex.getMessage(),
-                Collections.singletonList(ex.getMessage())
-        );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-    }
+
 
     @ExceptionHandler(InvalidOperationException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidOperationException(InvalidOperationException ex){
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    public ResponseEntity<ErrorResponseDTO> handleInvalidOperationException(InvalidOperationException ex){
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponseDTO);
     }
 
 }

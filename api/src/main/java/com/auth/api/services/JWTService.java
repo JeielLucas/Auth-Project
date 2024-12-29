@@ -1,11 +1,13 @@
 package com.auth.api.services;
 
-import com.auth.api.entities.UserDetailsImpl;
+import com.auth.api.dtos.ApiResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
 
 public interface JWTService {
-    String generateToken(UserDetailsImpl user, int durationInHours);
-
-    String validateToken(String token);
 
     void authenticateUserFromToken(String token);
+
+    ResponseEntity<ApiResponseDTO> validateAccessToken(HttpServletRequest request, HttpServletResponse response);
 }
