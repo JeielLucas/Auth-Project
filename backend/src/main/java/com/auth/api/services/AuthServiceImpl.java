@@ -5,11 +5,14 @@ import com.auth.api.entities.User;
 import com.auth.api.enums.UserRole;
 import com.auth.api.exceptions.*;
 import com.auth.api.repositories.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,9 @@ public class AuthServiceImpl implements AuthService{
     private final AuthenticationManager authenticationManager;
     private final TokenServiceImpl tokenServiceImpl;
     private final CookieServiceImpl cookieServiceImpl;
+
+    @Autowired
+    JWTServiceImpl jwtService;
 
     public AuthServiceImpl(UserRepository userRepository, EmailService emailService, BCryptPasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenServiceImpl tokenServiceImpl, CookieServiceImpl cookieServiceImpl) {
         this.userRepository = userRepository;
@@ -67,7 +73,6 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public ResponseEntity<ApiResponseDTO> login(LoginRequestDTO userDTO, HttpServletResponse response) {
-
         User user = userExists(userDTO.email());
 
         inactivedUser(user);
@@ -106,6 +111,7 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public ResponseEntity<ApiResponseDTO> requestPasswordReset(String email){
+        System.out.println("oi");
         User user = userExists(email);
 
         inactivedUser(user);
@@ -169,6 +175,19 @@ public class AuthServiceImpl implements AuthService{
         return ResponseEntity.ok(new ApiResponseDTO<>(true, user.getEmail(), "Login efetuado com sucesso"));
     };
 
+    @Override
+    public ResponseEntity<ApiResponseDTO> logout(HttpServletResponse response){
+        return cookieServiceImpl.clearCookies(response);
+    }
+
+    public ResponseEntity<ApiResponseDTO> checkAuth(HttpServletRequest request, HttpServletResponse response){
+        try{
+            return jwtService.validateAccessToken(request, response);
+        }catch (UnauthorizedException ex){
+            throw new UnauthorizedException("Refresh token nao encontrado");
+        }
+    }
+
     private void inactivedUser(User user){
         if(!user.isActive()){
             log.warn("Usuário {} inativo, necessita confirmar via email", user.getEmail());
@@ -200,8 +219,9 @@ public class AuthServiceImpl implements AuthService{
     private void authenticateUser(LoginRequestDTO userDTO){
         try{
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.email(), userDTO.password()));
-        }catch(Exception e){
-            System.out.println(e + " | " + e.getMessage());
+        }catch(BadCredentialsException e){
+            log.warn("Erro ao autenticar " + e.getMessage());
+            throw new InvalidCredentialsException(e.getMessage());
         }
     }
 

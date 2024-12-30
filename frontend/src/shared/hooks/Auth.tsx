@@ -10,13 +10,13 @@ export const useAuth = () => {
     const dispatch = useDispatch();
 
     const login = async (email: string, password: string) => {
-            const response = await axiosInstance.post('/login', { email, password });
+            const response = await axiosInstance.post('/auth/login', { email, password });
             setIsAuthenticated(true);
             return response.data;
     };
 
     const register = async (email: string, confirmEmail: string, password: string, confirmPassword: string) => {
-        const response = await axiosInstance.post('/register', {
+        const response = await axiosInstance.post('/auth/register', {
                 email,
                 confirmEmail,
                 password,
@@ -32,7 +32,7 @@ export const useAuth = () => {
     };
 
     const ativarConta = useCallback(async (token: string) => {
-        const response = await axiosInstance.patch(`/users/activate?token=${token}`);
+        const response = await axiosInstance.patch(`/auth/users/activate?token=${token}`);
         setIsActive(true);
         setIsAuthenticated(true);
         return response.data;
@@ -40,12 +40,12 @@ export const useAuth = () => {
     }, []);
 
     const sendResetPasswordEmail = async (email: string) => {
-        const response = await axiosInstance.post(`/forgot-password?email=${email}`);
+        const response = await axiosInstance.post(`/auth/forgot-password?email=${email}`);
         return response.data;
     };
 
     const redefinirSenha = async (token: string, password: string, confirmPassword: string) => {
-        const response = await axiosInstance.patch(`/reset-password?token=${token}`, {
+        const response = await axiosInstance.patch(`/auth/reset-password?token=${token}`, {
                 password,
                 confirmPassword,
         });
@@ -54,7 +54,7 @@ export const useAuth = () => {
 
     const tokenVerification = useCallback(async () => {
         try {
-            const response = await axiosInstance.get('/check');
+            const response = await axiosInstance.get('/auth/check');
             setIsAuthenticated(true);
             return response;
         } catch(error){
@@ -65,7 +65,7 @@ export const useAuth = () => {
 
     const loginGoogle = async (credentialResponse: string) =>{
         try{
-            const response = await axiosInstance.post(`/login/google?token=${credentialResponse}`)
+            const response = await axiosInstance.post(`/auth/login/google?token=${credentialResponse}`)
             return response;
         }catch(error: unknown){
             if(error instanceof AxiosError){

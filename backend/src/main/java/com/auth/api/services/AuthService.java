@@ -21,4 +21,6 @@ public interface AuthService {
 
     ResponseEntity<ApiResponseDTO> resetPassword(String token, ResetPasswordRequest passwordRequest);
 
+    ResponseEntity<ApiResponseDTO> logout(HttpServletResponse response);
+
 }

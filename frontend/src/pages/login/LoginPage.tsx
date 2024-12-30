@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
 import { Modal } from "../../shared/components/Modal/Modal";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { AxiosError } from "axios";
+import axiosInstance from "../../axiosConfig";
 
 export const LoginPage = () => {
     const { login, sendResetPasswordEmail, loginGoogle } = useAuth();
@@ -15,6 +16,14 @@ export const LoginPage = () => {
     const [loginError, setLoginError] = useState('');
     const [modalError, setModalError] = useState('');
     const [modalEmail, setModalEmail] = useState('');
+
+    useEffect(() => {
+        const clearCookies = async () =>{
+            await axiosInstance.get('/cookies/clear')
+        }
+
+        clearCookies();
+    }, []);
 
     const isEmailValid = (email: string): boolean =>{
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
