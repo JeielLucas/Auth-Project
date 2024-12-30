@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -123,6 +124,11 @@ public class AuthController {
         return authServiceImpl.activateUser(token, response);
     }
 
+    @GetMapping("/logout")
+    public ResponseEntity<ApiResponseDTO> logout(HttpServletResponse response){
+        return authServiceImpl.logout(response);
+    }
+
     @GetMapping("/check")
     @Operation(summary = "Verifica validade do jwt.", description = "Verifica o access_token, caso não esteja correto, tenta validar o refresh_token.")
     @ApiResponses(value = {
@@ -163,8 +169,8 @@ public class AuthController {
                     )
             )
     })
-    public ResponseEntity<Void> checkAutentication(){
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponseDTO> checkAutentication(HttpServletRequest request, HttpServletResponse response){
+        return authServiceImpl.checkAuth(request, response);
     }
 
     @GetMapping("/ping")

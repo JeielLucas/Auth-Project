@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { AxiosError } from "axios";
+import axiosInstance from "../../axiosConfig";
 
 
 export const RegisterPage = () => {
@@ -21,10 +22,16 @@ export const RegisterPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const clearCookies = async () =>{
+            await axiosInstance.get('/cookies/clear')
+        }
+
         if (emailData) {
             setEmail(emailData);
             setConfirmEmail(emailData)
         }
+
+        clearCookies();
     }, [emailData]);
 
     const isEmailValid = (email: string): boolean =>{

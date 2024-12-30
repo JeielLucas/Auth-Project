@@ -1,19 +1,15 @@
 package com.auth.api.services;
 
+import com.auth.api.dtos.ApiResponseDTO;
 import com.auth.api.entities.User;
 import com.auth.api.entities.UserDetailsImpl;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTCreationException;
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 @Service
 @Slf4j
@@ -56,4 +52,25 @@ public class CookieServiceImpl implements CookieService {
         cookie.setPath("/");
         response.addCookie(cookie);
     }
+
+    @Override
+    public ResponseEntity<ApiResponseDTO> clearCookies(HttpServletResponse response){
+        Cookie cookie = new Cookie("access_token", null);
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setSecure(true);
+        response.addCookie(cookie);
+
+        Cookie cookieRefresh = new Cookie("refresh_token", null);
+        cookieRefresh.setMaxAge(0);
+        cookieRefresh.setHttpOnly(true);
+        cookieRefresh.setPath("/");
+        cookieRefresh.setSecure(true);
+        response.addCookie(cookieRefresh);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponseDTO(true, "", "Cookies limpos com sucesso"));
+    }
+
+
 }

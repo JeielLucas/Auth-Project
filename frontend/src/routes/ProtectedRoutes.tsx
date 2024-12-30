@@ -19,8 +19,10 @@ export const ProtectedRoutes = ( {children}: ProtectedRoutesProps) =>{
         const validarToken = async () =>{
             try{
                 await tokenVerification();
+                hasRun.current = (false);
                 setIsAuthenticated(true);
             }catch(error){
+                console.log(error)
                 setIsAuthenticated(false);
             }
         };

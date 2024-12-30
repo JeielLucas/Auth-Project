@@ -31,12 +31,12 @@ public class SecurityFilter extends OncePerRequestFilter {
         if(token != null){
             try{
                 jwtServiceImpl.validateAccessToken(request, response);
-                System.out.println(2);
                 filterChain.doFilter(request, response);
+                return;
             }catch (UnauthorizedException ex){
-                System.out.println(1);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write(ex.getMessage());
+                return;
             }
         }
         filterChain.doFilter(request, response);
