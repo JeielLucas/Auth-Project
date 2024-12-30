@@ -28,22 +28,22 @@ public class SecurityConfiguration {
     }
 
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST = {
-            "/api/v2/auth/login",
             "/api/v2/auth/register",
-            "/api/v2/auth/forgot-password",
+            "/api/v2/auth/login",
             "/api/v2/auth/login/google",
+            "/api/v2/auth/forgot-password",
+
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET = {
-            "/api/v2/auth/users/activate",
-            "/api/v2/auth/users",
             "/api/v2/auth/check",
+            "/api/v2/auth/ping",
+            "/api/v2/email/get",
             "/api-docs/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/api/v2/auth/ping",
-            "/api/v2/email/get"
     };
-    public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PUT = {
+    public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PATCH = {
+            "/api/v2/auth/users/activate",
             "/api/v2/auth/reset-password",
     };
 
@@ -58,7 +58,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(HttpMethod.POST, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET).permitAll()
-                        .requestMatchers(HttpMethod.PUT, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PUT).permitAll()
+                        .requestMatchers(HttpMethod.PATCH, ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PATCH).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -68,12 +68,12 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:8081"));
+        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:8081", "http://localhost:5173"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         corsConfiguration.setAllowCredentials(true);
 
-        corsConfiguration.setExposedHeaders(Arrays.asList("Authorization"));
+        corsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);

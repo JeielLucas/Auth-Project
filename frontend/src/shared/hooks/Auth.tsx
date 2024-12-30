@@ -32,7 +32,7 @@ export const useAuth = () => {
     };
 
     const ativarConta = useCallback(async (token: string) => {
-        const response = await axiosInstance.get(`/users/activate?token=${token}`);
+        const response = await axiosInstance.patch(`/users/activate?token=${token}`);
         setIsActive(true);
         setIsAuthenticated(true);
         return response.data;
