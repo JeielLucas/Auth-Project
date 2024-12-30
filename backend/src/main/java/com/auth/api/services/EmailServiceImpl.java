@@ -32,7 +32,6 @@ public class EmailServiceImpl implements EmailService {
         this.mailSender = mailSender;
     }
     private final String url = "http://localhost:8081";
-    //private final String url = "https://auth-front.jeiel.com.br";
 
     @Override
     @Async
