@@ -88,8 +88,6 @@ public class ValidationExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(apiResponseDTO);
     }
 
-
-
     @ExceptionHandler(InvalidOperationException.class)
     public ResponseEntity<ErrorResponseDTO> handleInvalidOperationException(InvalidOperationException ex){
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));

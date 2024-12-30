@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService{
 
         String encryptedPassword = passwordEncoder.encode(userDTO.password());
         User user = new User(userDTO.email(), encryptedPassword, UserRole.USER);
-        user.setActive(true);
+        user.setActive(false);
         user.setCreatedAt(LocalDateTime.now());
 
         tokenServiceImpl.generateUUIDToken("activation", user);
