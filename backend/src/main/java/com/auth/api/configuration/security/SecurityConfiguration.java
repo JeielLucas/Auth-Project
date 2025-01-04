@@ -36,13 +36,17 @@ public class SecurityConfiguration {
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET = {
             "/api/v2/auth/check",
+            "/api/v2/auth/ping",
+            "/api/v2/auth/logout",
 
-            "/api/v2/email/get",
             "/api-docs/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
+
             "/api/v2/cookies/clear",
-            "/api/v2/auth/logout"
+
+            "/api/v2/email/get",
+
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PATCH = {
             "/api/v2/auth/users/activate",

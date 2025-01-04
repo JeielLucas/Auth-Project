@@ -9,12 +9,19 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.View;
 
 import java.util.Collections;
 import java.util.HashMap;
 
 @RestControllerAdvice
 public class ValidationExceptionHandler {
+
+    private final View error;
+
+    public ValidationExceptionHandler(View error) {
+        this.error = error;
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleValidationExceptions(MethodArgumentNotValidException ex){
@@ -33,7 +40,6 @@ public class ValidationExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDTO> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex){
-        System.out.println(ex.getMessage());
         ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.CONFLICT.value(), "Email já cadastrado", Collections.singletonList(ex.getMessage()));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponseDTO);
     }
@@ -52,14 +58,14 @@ public class ValidationExceptionHandler {
 
     @ExceptionHandler(AccountNotActivatedException.class)
     public ResponseEntity<ErrorResponseDTO> handleAccountNotActivatedException(AccountNotActivatedException ex){
-        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponseDTO);
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.FORBIDDEN.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponseDTO);
     }
 
     @ExceptionHandler(TokenVerificationException.class)
     public ResponseEntity<ErrorResponseDTO> handleJWTVerificationException(TokenVerificationException ex){
-        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponseDTO);
+        ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpStatus.CONFLICT.value(), ex.getMessage(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponseDTO);
     }
 
     @ExceptionHandler(InvalidTokenException.class)

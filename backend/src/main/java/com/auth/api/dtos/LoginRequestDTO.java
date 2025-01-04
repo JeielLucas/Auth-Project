@@ -8,7 +8,6 @@ public record LoginRequestDTO(
         @Email (message = "Email deve ser válido")
         @NotBlank(message = "Email não pode ser vazia")
         String email,
-        @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
         @NotBlank(message = "Senha não pode ser vazia")
         String password
 ){
