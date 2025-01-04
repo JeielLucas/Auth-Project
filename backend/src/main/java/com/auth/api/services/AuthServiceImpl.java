@@ -8,7 +8,6 @@ import com.auth.api.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,17 +30,16 @@ public class AuthServiceImpl implements AuthService{
     private final AuthenticationManager authenticationManager;
     private final TokenServiceImpl tokenServiceImpl;
     private final CookieServiceImpl cookieServiceImpl;
+    private final JWTServiceImpl jwtServiceImpl;
 
-    @Autowired
-    JWTServiceImpl jwtService;
-
-    public AuthServiceImpl(UserRepository userRepository, EmailService emailService, BCryptPasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenServiceImpl tokenServiceImpl, CookieServiceImpl cookieServiceImpl) {
+    public AuthServiceImpl(UserRepository userRepository, EmailService emailService, BCryptPasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenServiceImpl tokenServiceImpl, CookieServiceImpl cookieServiceImpl, JWTServiceImpl jwtServiceImpl) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.tokenServiceImpl = tokenServiceImpl;
         this.cookieServiceImpl = cookieServiceImpl;
+        this.jwtServiceImpl = jwtServiceImpl;
     }
 
     @Override
@@ -55,7 +53,7 @@ public class AuthServiceImpl implements AuthService{
 
         String encryptedPassword = passwordEncoder.encode(userDTO.password());
         User user = new User(userDTO.email(), encryptedPassword, UserRole.USER);
-        user.setActive(false);
+        user.setActive(true);
         user.setCreatedAt(LocalDateTime.now());
 
         tokenServiceImpl.generateUUIDToken("activation", user);
@@ -111,7 +109,6 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public ResponseEntity<ApiResponseDTO> requestPasswordReset(String email){
-        System.out.println("oi");
         User user = userExists(email);
 
         inactivedUser(user);
@@ -180,9 +177,10 @@ public class AuthServiceImpl implements AuthService{
         return cookieServiceImpl.clearCookies(response);
     }
 
+    @Override
     public ResponseEntity<ApiResponseDTO> checkAuth(HttpServletRequest request, HttpServletResponse response){
         try{
-            return jwtService.validateAccessToken(request, response);
+            return jwtServiceImpl.validateAccessToken(request, response);
         }catch (UnauthorizedException ex){
             throw new UnauthorizedException("Refresh token nao encontrado");
         }
@@ -221,7 +219,7 @@ public class AuthServiceImpl implements AuthService{
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDTO.email(), userDTO.password()));
         }catch(BadCredentialsException e){
             log.warn("Erro ao autenticar " + e.getMessage());
-            throw new InvalidCredentialsException(e.getMessage());
+            throw new InvalidCredentialsException("Credenciais invalidas");
         }
     }
 

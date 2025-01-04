@@ -69,6 +69,8 @@ public class CookieServiceImpl implements CookieService {
         cookieRefresh.setSecure(true);
         response.addCookie(cookieRefresh);
 
+        log.info("Cookies limpos com sucesso");
+
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponseDTO(true, "", "Cookies limpos com sucesso"));
     }
 
