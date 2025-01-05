@@ -3,15 +3,15 @@ import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
 import { Modal } from "../../shared/components/Modal/Modal";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { AxiosError } from "axios";
-import axiosInstance from "../../axiosConfig";
+import { setEmailData } from "../../redux/authSlice";
 
 
 export const RegisterPage = () => {
-    const { register, loginGoogle} = useAuth();
+    const { register, loginGoogle } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmEmail, setConfirmEmail] = useState('');
@@ -20,19 +20,15 @@ export const RegisterPage = () => {
     const [openModal, setOpenModal] = useState(false);
     const emailData = useSelector((state: RootState) => state.auth.emailData);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        const clearCookies = async () =>{
-            await axiosInstance.get('/cookies/clear')
-        }
-
         if (emailData) {
             setEmail(emailData);
             setConfirmEmail(emailData)
+            dispatch(setEmailData(''))
         }
-
-        clearCookies();
-    }, [emailData]);
+    }, [dispatch, emailData]);
 
     const isEmailValid = (email: string): boolean =>{
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

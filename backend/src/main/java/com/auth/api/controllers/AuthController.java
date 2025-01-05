@@ -43,8 +43,8 @@ public class AuthController {
             }
     )
     @PostMapping("/register")
-    public ResponseEntity<ApiResponseDTO> Register(@Valid @RequestBody RegisterRequestDTO user){
-        return authServiceImpl.register(user);
+    public ResponseEntity<ApiResponseDTO> Register(@Valid @RequestBody RegisterRequestDTO user, HttpServletResponse response){
+        return authServiceImpl.register(user, response);
     }
 
 
@@ -80,7 +80,7 @@ public class AuthController {
                     @ApiResponse(responseCode = "422", ref = "#/components/responses/google_login"),
             }
     )
-    @PostMapping("/login/google")
+    @PostMapping("/login/social/google")
     public ResponseEntity<ApiResponseDTO> loginWithGoogle(@RequestParam String token, HttpServletResponse response){
         return authServiceImpl.loginWithGoogle(token, response);
     }
@@ -132,12 +132,18 @@ public class AuthController {
                     @ApiResponse(responseCode = "400", ref = "#/components/responses/invalid_operation"),
             }
     )
-    @PatchMapping("/users/activate")
+    @PatchMapping("/activate")
     public ResponseEntity<ApiResponseDTO> activateUser(@RequestParam String token, HttpServletResponse response){
         return authServiceImpl.activateUser(token, response);
     }
 
-    @GetMapping("/logout")
+    @Operation(
+            summary = "Limpeza dos cookies para logout do usuário",
+            responses = {
+                    @ApiResponse(responseCode = "200", ref="#/components/responses/logout")
+            }
+    )
+    @PostMapping("/logout")
     public ResponseEntity<ApiResponseDTO> logout(HttpServletResponse response){
         return authServiceImpl.logout(response);
     }
