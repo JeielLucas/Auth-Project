@@ -47,17 +47,23 @@ public class AuthServiceImpl implements AuthService{
         cookieServiceImpl.clearCookies(response);
 
         validateEmails(userDTO);
-
         validatePasswords(userDTO.password(), userDTO.confirmPassword());
 
-        ensureEmailNotRegistered(userDTO.email());
+        User user = ensureEmailNotRegistered(userDTO.email());
 
         String encryptedPassword = passwordEncoder.encode(userDTO.password());
-        User user = new User(userDTO.email(), encryptedPassword, UserRole.USER);
-        user.setActive(false);
-        user.setCreatedAt(LocalDateTime.now());
 
-        tokenServiceImpl.generateUUIDToken("activation", user);
+        if(user == null){
+            user = new User(userDTO.email(), UserRole.USER);
+            user.setActive(false);
+            user.setCreatedAt(LocalDateTime.now());
+        }
+
+        if(user.getToken() == null || user.getTokenExpiration().isBefore(LocalDateTime.now())){
+            tokenServiceImpl.generateUUIDToken("activation", user);
+        }
+
+        user.setPassword(encryptedPassword);
 
         userRepository.save(user);
 
@@ -210,11 +216,23 @@ public class AuthServiceImpl implements AuthService{
         }
     }
 
-    private void ensureEmailNotRegistered(String email){
-        if(userRepository.findByEmail(email) != null) {
+    private User ensureEmailNotRegistered(String email){
+        User user = userRepository.findByEmail(email);
+
+        if(user != null){
+            if("activation".equals(user.getTokenType())){
+                if(user.getTokenExpiration().isAfter(LocalDateTime.now())){
+                    throw new EmailAlreadyExistsException("Email " + email + " já está cadastrado e aguardando ativação");
+                }else{
+                    tokenServiceImpl.generateUUIDToken("activation", user);
+                    return user;
+                }
+            }
             log.warn("Email já cadastrado {}", email);
             throw new EmailAlreadyExistsException("Email " + email + " já está cadastrado");
         }
+
+        return null;
     }
 
     private void authenticateUser(LoginRequestDTO userDTO){

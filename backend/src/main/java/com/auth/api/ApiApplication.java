@@ -16,7 +16,9 @@ public class ApiApplication {
 		Dotenv dotenv = Dotenv.configure()
 				.directory(envDirectory)
 				.load();
-		dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+		dotenv.entries().forEach(entry ->
+				System.setProperty(entry.getKey(), entry.getValue())
+		);
 
 		SpringApplication.run(ApiApplication.class, args);
 	}

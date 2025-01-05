@@ -29,7 +29,7 @@ public class TokenServiceImpl implements TokenService{
 
         user.setToken(token);
         user.setTokenType(type);
-        user.setTokenExpiration(LocalDateTime.now().plusMinutes(30));
+        user.setTokenExpiration(LocalDateTime.now().plusMinutes(1));
 
         return user;
     }
