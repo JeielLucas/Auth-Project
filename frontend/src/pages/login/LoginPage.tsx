@@ -1,11 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Form } from "../../shared/components/Form/Form";
 import { useAuth } from "../../shared/hooks/Auth";
 import { Modal } from "../../shared/components/Modal/Modal";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { AxiosError } from "axios";
-import axiosInstance from "../../axiosConfig";
 
 export const LoginPage = () => {
     const { login, sendResetPasswordEmail, loginGoogle } = useAuth();
@@ -17,13 +16,7 @@ export const LoginPage = () => {
     const [modalError, setModalError] = useState('');
     const [modalEmail, setModalEmail] = useState('');
 
-    useEffect(() => {
-        const clearCookies = async () =>{
-            await axiosInstance.get('/cookies/clear')
-        }
-
-        clearCookies();
-    }, []);
+ 
 
     const isEmailValid = (email: string): boolean =>{
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,11 +37,6 @@ export const LoginPage = () => {
 
         if(!isEmailValid(email)){
             setLoginError('Email inválido');
-            return;
-        }
-
-        if(password.length < 8){
-            setLoginError('Senha muito curta')
             return;
         }
 

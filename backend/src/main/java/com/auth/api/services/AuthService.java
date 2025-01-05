@@ -14,7 +14,7 @@ public interface AuthService {
 
     ResponseEntity<ApiResponseDTO> loginWithGoogle(String token, HttpServletResponse httpServletResponse);
 
-    ResponseEntity<ApiResponseDTO> register(RegisterRequestDTO registerRequestDTO);
+    ResponseEntity<ApiResponseDTO> register(RegisterRequestDTO registerRequestDTO, HttpServletResponse response);
 
     ResponseEntity<ApiResponseDTO> activateUser(String token, HttpServletResponse response);
 

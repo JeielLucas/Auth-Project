@@ -32,7 +32,7 @@ export const useAuth = () => {
     };
 
     const ativarConta = useCallback(async (token: string) => {
-        const response = await axiosInstance.patch(`/auth/users/activate?token=${token}`);
+        const response = await axiosInstance.patch(`/auth/activate?token=${token}`);
         setIsActive(true);
         setIsAuthenticated(true);
         return response.data;
@@ -65,7 +65,7 @@ export const useAuth = () => {
 
     const loginGoogle = async (credentialResponse: string) =>{
         try{
-            const response = await axiosInstance.post(`/auth/login/google?token=${credentialResponse}`)
+            const response = await axiosInstance.post(`/auth/login/social/google?token=${credentialResponse}`)
             return response;
         }catch(error: unknown){
             if(error instanceof AxiosError){
@@ -79,6 +79,11 @@ export const useAuth = () => {
         }
     };
 
+    const logout = async () =>{
+        const response = await axiosInstance.post('/auth/logout');
+        console.log(response);
+    };
+
     return {
         isAuthenticated,
         login,
@@ -89,5 +94,6 @@ export const useAuth = () => {
         tokenVerification,
         isActive,
         loginGoogle,
+        logout
     };
 };

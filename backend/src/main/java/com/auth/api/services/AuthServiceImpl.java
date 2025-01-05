@@ -43,7 +43,8 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public ResponseEntity<ApiResponseDTO> register(RegisterRequestDTO userDTO) {
+    public ResponseEntity<ApiResponseDTO> register(RegisterRequestDTO userDTO, HttpServletResponse response) {
+        cookieServiceImpl.clearCookies(response);
 
         validateEmails(userDTO);
 
@@ -53,7 +54,7 @@ public class AuthServiceImpl implements AuthService{
 
         String encryptedPassword = passwordEncoder.encode(userDTO.password());
         User user = new User(userDTO.email(), encryptedPassword, UserRole.USER);
-        user.setActive(true);
+        user.setActive(false);
         user.setCreatedAt(LocalDateTime.now());
 
         tokenServiceImpl.generateUUIDToken("activation", user);
@@ -71,6 +72,8 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public ResponseEntity<ApiResponseDTO> login(LoginRequestDTO userDTO, HttpServletResponse response) {
+        cookieServiceImpl.clearCookies(response);
+
         User user = userExists(userDTO.email());
 
         inactivedUser(user);
