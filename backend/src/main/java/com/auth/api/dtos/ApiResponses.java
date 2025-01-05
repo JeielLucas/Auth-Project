@@ -138,6 +138,13 @@ public class ApiResponses {
                                     new ApiResponseDTO<>(true, "", "Senha redefinida com sucesso")
                             )));
 
+    public static final ApiResponse LOGOUT = new ApiResponse().description("Logout realizado com sucesso")
+            .content(new Content()
+                    .addMediaType(MediaType.APPLICATION_JSON_VALUE,
+                            new io.swagger.v3.oas.models.media.MediaType().example(
+                                    new ApiResponseDTO<>(true, "", "Cookies limpos com sucesso")
+                            )));
+
     private static HashMap<String, String> map(String email){
         HashMap<String, String> response = new HashMap<>();
         response.put("email", email);
