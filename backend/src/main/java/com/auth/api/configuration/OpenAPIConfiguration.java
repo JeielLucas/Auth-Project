@@ -49,6 +49,7 @@ public class OpenAPIConfiguration {
                         .addResponses("reset_password", ApiResponses.RESET_PASSWORD)
                         .addResponses("reuse_password", ApiResponses.REUSE_PASSWORD)
                         .addResponses("successful_reset_password", ApiResponses.SUCCESSFUL_RESET_PASSWORD)
+                        .addResponses("logout", ApiResponses.LOGOUT)
                 );
     }
 }

@@ -29,28 +29,23 @@ public class SecurityConfiguration {
 
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_POST = {
             "/api/v2/auth/register",
+            "/api/v2/auth/logout",
             "/api/v2/auth/login",
-            "/api/v2/auth/login/google",
-            "/api/v2/auth/forgot-password",
-
+            "/api/v2/auth/login/social/google",
+            "/api/v2/auth/forgot-password"
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_GET = {
             "/api/v2/auth/check",
             "/api/v2/auth/ping",
-            "/api/v2/auth/logout",
 
             "/api-docs/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
 
-            "/api/v2/cookies/clear",
-
-            "/api/v2/email/get",
-
     };
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED_PATCH = {
-            "/api/v2/auth/users/activate",
             "/api/v2/auth/reset-password",
+            "/api/v2/auth/activate"
     };
 
     @Bean
