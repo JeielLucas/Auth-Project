@@ -80,8 +80,7 @@ export const useAuth = () => {
     };
 
     const logout = async () =>{
-        const response = await axiosInstance.post('/auth/logout');
-        console.log(response);
+        await axiosInstance.post('/auth/logout');
     };
 
     return {
