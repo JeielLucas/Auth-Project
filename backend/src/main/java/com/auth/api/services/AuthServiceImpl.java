@@ -216,7 +216,6 @@ public class AuthServiceImpl implements AuthService{
         }
     }
 
-<<<<<<< HEAD
     private User ensureEmailNotRegistered(String email){
         User user = userRepository.findByEmail(email);
 
@@ -234,13 +233,6 @@ public class AuthServiceImpl implements AuthService{
         }
 
         return null;
-=======
-    private void ensureEmailNotRegistered(String email){
-        if(userRepository.findByEmail(email) != null) {
-            log.warn("Email já cadastrado {}", email);
-            throw new EmailAlreadyExistsException("Email " + email + " já está cadastrado");
-        }
->>>>>>> 31cbe154d68ef12c4afb7d9b554eac652f7cfceb
     }
 
     private void authenticateUser(LoginRequestDTO userDTO){
