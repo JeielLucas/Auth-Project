@@ -24,14 +24,12 @@ public class TokenServiceImpl implements TokenService{
     }
 
     @Override
-    public User generateUUIDToken(String type, User user) {
+    public void generateUUIDToken(String type, User user) {
         String token = UUID.randomUUID().toString();
 
         user.setToken(token);
         user.setTokenType(type);
         user.setTokenExpiration(LocalDateTime.now().plusMinutes(30));
-
-        return user;
     }
 
     @Override

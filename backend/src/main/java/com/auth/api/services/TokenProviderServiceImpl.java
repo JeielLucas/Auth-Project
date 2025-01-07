@@ -5,7 +5,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -24,17 +23,17 @@ public class TokenProviderServiceImpl implements TokenProvider{
     }
 
     @Override
-    public String generateToken(UserDetailsImpl user, int durationInHours) {
+    public String generateToken(UserDetailsImpl user, int durationInMinutes) {
         String secretKey = environment.getProperty("JWT_SECRET_KEY");
         String issuer = environment.getProperty("JWT_ISSUER");
         try{
             Algorithm algorithm = Algorithm.HMAC256(secretKey);
-
+            System.out.println(expirationDate(durationInMinutes));
             return JWT.create()
                     .withIssuer(issuer)
                     .withSubject(user.getUsername())
-                    .withIssuedAt(creationDate())
-                    .withExpiresAt(expirationDate(durationInHours))
+                    .withIssuedAt(Instant.now())
+                    .withExpiresAt(expirationDate(durationInMinutes))
                     .sign(algorithm);
         }catch (JWTCreationException ex){
             log.error("Erro ao gerar o token: " + ex.getMessage());
@@ -60,11 +59,7 @@ public class TokenProviderServiceImpl implements TokenProvider{
         }
     }
 
-    private Instant creationDate(){
-        return Instant.now();
-    }
-
-    private Instant expirationDate(int durationInHours){
-        return Instant.now().plus(durationInHours, ChronoUnit.HOURS);
+    private Instant expirationDate(int durationInMinutes){
+        return Instant.now().plus(durationInMinutes, ChronoUnit.MINUTES);
     }
 }

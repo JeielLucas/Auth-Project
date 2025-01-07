@@ -1,24 +1,18 @@
 package com.auth.api.services;
 
-import com.auth.api.dtos.ApiResponseDTO;
 import com.auth.api.entities.Email;
 import com.auth.api.entities.User;
 import com.auth.api.enums.StatusEmail;
 import com.auth.api.repositories.EmailRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMailMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -31,18 +25,21 @@ public class EmailServiceImpl implements EmailService {
         this.emailRepository = emailRepository;
         this.mailSender = mailSender;
     }
+
+    private final String owner = "api-auth-project";
     private final String url = "http://localhost:8081";
 
     @Override
     @Async
     public void sendActivationEmail(User user, String token) {
         Email email = new Email();
-        email.setOwnerRef("api-auth-project");
+        email.setOwnerRef(owner);
         email.setEmailTo(user.getEmail());
         email.setSubject("Ativação de conta - Auth Project");
         email.setText(
                 "<p>Clique no link abaixo para ativar sua conta</p>" +
-                "<a href='" + url + "/ativar-conta/" + token + "'>" + "Ativar conta</a>"
+                "<a href='" + url + "/ativar-conta/" + token + "'>" + "Ativar conta</a>" +
+                "<p>Esse token tem a validade de 30 minutos, após esse tempo precisa fazer o cadastro novamente.</p>"
         );
         email.setCreatedAt(LocalDateTime.now());
 
@@ -53,12 +50,13 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendResetPasswordEmail(User user, String token) {
         Email email = new Email();
-        email.setOwnerRef("api-auth-project");
+        email.setOwnerRef(owner);
         email.setEmailTo(user.getEmail());
         email.setSubject("Redefinição de senha - Auth Project");
         email.setText(
-                "<p>Clique no link abaixo para redefinir sua senha</p>"
-                + "<a href='" + url + "/redefinir-senha/" + token + "'>" + "Redefinir senha</a>"
+                "<p>Clique no link abaixo para redefinir sua senha</p>"+
+                "<a href='" + url + "/redefinir-senha/" + token + "'>" + "Redefinir senha</a>" +
+                "<p>Esse token tem a validade de 30 minutos, após esse tempo precisa solicitar a troca de senha novamente.</p>"
         );
         email.setCreatedAt(LocalDateTime.now());
 
@@ -82,13 +80,5 @@ public class EmailServiceImpl implements EmailService {
         }finally {
             emailRepository.save(email);
         }
-    }
-
-    @Override public ResponseEntity<ApiResponseDTO> getEmails(){
-        List<Email> emails = emailRepository.findAll();
-
-        ApiResponseDTO apiResponseDTO = new ApiResponseDTO<>(true, emails, "Emails");
-
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponseDTO);
     }
 }

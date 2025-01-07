@@ -9,19 +9,12 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.View;
 
 import java.util.Collections;
 import java.util.HashMap;
 
 @RestControllerAdvice
 public class ValidationExceptionHandler {
-
-    private final View error;
-
-    public ValidationExceptionHandler(View error) {
-        this.error = error;
-    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleValidationExceptions(MethodArgumentNotValidException ex){

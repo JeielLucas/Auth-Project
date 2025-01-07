@@ -37,6 +37,9 @@ export const ActivatePage = () => {
                 } else {
                     setStatus("error");
                 }
+                setTimeout(() => {
+                    navigate("/register");
+                }, 4000);
             }
         };
 
@@ -48,7 +51,7 @@ export const ActivatePage = () => {
         <div className={styles.div}>
             {status === "loading" && <div>Ativando conta...</div>}
             {status === "success" && <div>Conta ativada com sucesso! Você será redirecionado para página de login.</div>}
-            {status === "error" && <div>Erro ao ativar conta. {errorMessage}.</div>}
+            {status === "error" && <div>Erro ao ativar conta. {errorMessage}. Redirecionando para página de cadastro.</div>}
         </div>
     );
 };

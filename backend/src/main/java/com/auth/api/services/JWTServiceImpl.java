@@ -68,7 +68,7 @@ public class JWTServiceImpl implements JWTService {
                 User user = userRepository.findByEmail(email);
 
                 if(user != null){
-                    cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "access_token", 30 * 60, false, true, 1);
+                    cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "access_token", 30 * 60, false, true, 30);
                     log.warn("Enviando novo access_token");
                     authenticateUserFromToken(refreshToken);
                     return true;

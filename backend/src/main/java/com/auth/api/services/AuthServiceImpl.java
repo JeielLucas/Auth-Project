@@ -87,6 +87,7 @@ public class AuthServiceImpl implements AuthService{
         authenticateUser(userDTO);
 
         issueJwtCookies(user, response);
+
         log.info("Usuário {} autenticado com sucesso, as {}", user.getEmail(), new Date());
 
         return ResponseEntity.ok(new ApiResponseDTO<>(true, "", "Login efetuado com sucesso"));
@@ -172,9 +173,7 @@ public class AuthServiceImpl implements AuthService{
 
         inactivedUser(user);
 
-        cookieServiceImpl.generateJWTandAddCookiesToResponse(user, httpResponse, "access_token",30*60, false, true, 1);
-
-        cookieServiceImpl.generateJWTandAddCookiesToResponse(user, httpResponse, "refresh_token", 3*24*60*60, false, true, 72);
+        issueJwtCookies(user, httpResponse);
 
         log.info("Usuário {} autenticado com sucesso, as {}", user.getEmail(), new Date());
 
@@ -222,7 +221,7 @@ public class AuthServiceImpl implements AuthService{
         if(user != null){
             if("activation".equals(user.getTokenType())){
                 if(user.getTokenExpiration().isAfter(LocalDateTime.now())){
-                    throw new EmailAlreadyExistsException("Email " + email + " já está cadastrado e aguardando ativação");
+                    throw new AccountNotActivatedException("Usuário cadastrado, necessita de ativação, verifique seu email");
                 }else{
                     tokenServiceImpl.generateUUIDToken("activation", user);
                     return user;
@@ -245,9 +244,10 @@ public class AuthServiceImpl implements AuthService{
     }
 
     private void issueJwtCookies(User user, HttpServletResponse response){
-        cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "access_token", 30*60, false, true, 1);
+        cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "access_token", 30*60, false, true, 30);
 
-        cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72);
+        cookieServiceImpl.generateJWTandAddCookiesToResponse(user, response, "refresh_token", 3*24*60*60, false, true, 72*60);
+
     }
 
     private User userExists(String email){

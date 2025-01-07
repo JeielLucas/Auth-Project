@@ -1,4 +1,4 @@
-package com.auth.api.configuration;
+package com.auth.api.configuration.docs;
 
 import com.auth.api.dtos.ApiResponses;
 import io.swagger.v3.oas.models.Components;

@@ -28,18 +28,10 @@ public class AuthController {
             summary = "Registrar novo usuário",
             description = "Cria um novo usuário no sistema",
             responses = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            ref = "#/components/responses/successful_create"
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            ref = "#/components/responses/invalid_credentials"
-                    ),
-                    @ApiResponse(
-                            responseCode = "409",
-                            ref = "#/components/responses/email_already_exists"
-                    )
+                    @ApiResponse(responseCode = "201", ref = "#/components/responses/successful_create"),
+                    @ApiResponse(responseCode = "400", ref = "#/components/responses/invalid_credentials"),
+                    @ApiResponse(responseCode = "409", ref = "#/components/responses/email_already_exists"),
+                    @ApiResponse(responseCode = "403", ref = "#/components/responses/account_not_activated")
             }
     )
     @PostMapping("/register")
@@ -52,18 +44,9 @@ public class AuthController {
             summary = "Login do usuário",
             description = "Realiza a autenticação do usuário. Retorna jwt de acesso e refresh nos cookies.",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            ref = "#/components/responses/successful_login"
-                    ),
-                    @ApiResponse(
-                            responseCode = "403",
-                            ref = "#/components/responses/account_not_activated"
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            ref = "#/components/responses/unauthorized"
-                    ),
+                    @ApiResponse(responseCode = "200", ref = "#/components/responses/successful_login"),
+                    @ApiResponse(responseCode = "403", ref = "#/components/responses/account_not_activated"),
+                    @ApiResponse(responseCode = "401", ref = "#/components/responses/unauthorized"),
             }
     )
     @PostMapping("/login")
@@ -78,6 +61,7 @@ public class AuthController {
                     @ApiResponse(responseCode = "200", ref = "#/components/responses/successful_login"),
                     @ApiResponse(responseCode = "409", ref = "#/components/responses/invalid_google_token"),
                     @ApiResponse(responseCode = "422", ref = "#/components/responses/google_login"),
+                    @ApiResponse(responseCode = "403", ref = "#/components/responses/account_not_activated"),
             }
     )
     @PostMapping("/login/social/google")
@@ -89,19 +73,9 @@ public class AuthController {
             summary = "Solicitação para reset de senha",
             description = "Manda o email para o usuário conseguir fazer o reset da sua senha.",
             responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            ref = "#/components/responses/reset_password"
-                    ),
-                    @ApiResponse(
-                            responseCode = "401",
-                            ref = "#/components/responses/unauthorized"
-
-                    ),
-                    @ApiResponse(
-                            responseCode = "403",
-                            ref = "#/components/responses/account_not_activated"
-                    )
+                    @ApiResponse(responseCode = "200", ref = "#/components/responses/reset_password"),
+                    @ApiResponse(responseCode = "401", ref = "#/components/responses/unauthorized"),
+                    @ApiResponse(responseCode = "403", ref = "#/components/responses/account_not_activated")
             }
     )
     @PostMapping("/forgot-password")
@@ -122,7 +96,6 @@ public class AuthController {
     public ResponseEntity<ApiResponseDTO> resetPassword(@RequestParam String token, @RequestBody ResetPasswordRequest password){
         return authServiceImpl.resetPassword(token, password);
     }
-
 
     @Operation(
             summary = "Ativa o usuário após o cadastro.",

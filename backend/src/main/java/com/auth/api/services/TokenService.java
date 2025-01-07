@@ -4,7 +4,7 @@ import com.auth.api.entities.User;
 
 public interface TokenService {
 
-    User generateUUIDToken(String type, User user);
+    void generateUUIDToken(String type, User user);
 
     String extractGoogleEmail(String token);
 
