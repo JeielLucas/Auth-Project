@@ -172,7 +172,7 @@ export const LoginPage = () => {
                         onChange: (e: React.ChangeEvent<HTMLInputElement>) => setModalEmail(e.target.value),
                     }}
                 button={{
-                        text: 'Redefinir senha',
+                        text: 'Redefinir',
                 }}
                 errorMessage={modalError}
                 onButtonClick={() => handleRedefinirSenha(modalEmail)}

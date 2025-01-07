@@ -75,7 +75,7 @@ export const PasswordPage = () =>{
                 input={inputs}
                 text='Redefinir senha'
                 onSubmit={handleRedefinirSenha}
-                buttonText="Redefinir senha"
+                buttonText="Redefinir"
                 buttonType="submit"
                 errorMessage={error}
             />
