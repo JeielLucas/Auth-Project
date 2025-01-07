@@ -134,6 +134,13 @@ DB_URL=jdbc:postgresql://postgres:5432/auth-teste
 DB_USERNAME=user_db123
 DB_PASSWORD=senha_db1234.
 ```
+6. (Opcional) Você também pode alterar os valores de JWT_SECRET_KEY e JWT_ISSUER no arquivo .env da pasta backend.
+- JWT_SECRET_KEY: Define a chave secreta usada para assinar os tokens JWT. Alterá-la é útil caso deseje reforçar a segurança ou usar uma chave personalizada.
+- JWT_ISSUER: Define o emissor dos tokens JWT. Alterá-lo é necessário apenas se quiser configurar um nome personalizado ou específico para a aplicação.
+```
+JWT_SECRET_KEY=sua_secret_key
+JWT_ISSUER=auth-api
+```
 ### Com Docker Compose
 
 1. Certifique-se de ter o Docker e Docker Compose instalados em sua máquina 
