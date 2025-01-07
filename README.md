@@ -102,7 +102,7 @@ O corpo da requisição deve conter:
 
 1. Clone o repositório:
   ```bash
-  git clone https://github.com/JeielLucas/To-Do-api.git
+  git clone https://github.com/JeielLucas/Auth-Project.git
   ```
 2. Navegue até a pasta do projeto.
 ```
@@ -121,7 +121,19 @@ CLIENT_SECRET=secret123
 MAIL_USER=user@email.com
 MAIL_PASSWORD=123Password
 ```
-
+5. (Opcional) Caso deseje, pode alterar o arquivo .env da pasta raiz.
+Exemplo:
+```
+POSTGRES_DB=auth-teste
+POSTGRES_USER=user_db123
+POSTGRES_PASSWORD=senha_db1234.
+```
+OBS: Caso alterar esse arquivo, faça as alterações refletirem no .env da pasta do backend
+```
+DB_URL=jdbc:postgresql://postgres:5432/auth-teste
+DB_USERNAME=user_db123
+DB_PASSWORD=senha_db1234.
+```
 ### Com Docker Compose
 
 1. Certifique-se de ter o Docker e Docker Compose instalados em sua máquina 
@@ -230,6 +242,5 @@ Todos os tokens são armazenados em cookies com a flag `HttpOnly` para prevenir 
 	"message": "Usuario precisa se cadastrar"
 }
 ```
-
 
 
